@@ -1,0 +1,67 @@
+# FastAPI & Web Framework
+fastapi==0.115.12
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+pydantic==2.10.5
+pydantic-settings==2.1.0
+email-validator==2.1.0.post1
+
+# Database
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.25
+alembic==1.13.1
+pgvector==0.2.4
+
+# Redis & Caching
+redis==5.0.1
+hiredis==2.3.2
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.1.2
+pyjwt==2.8.0
+
+# Web Scraping
+botasaurus==4.0.7
+botasaurus-driver==4.0.7
+# Note: Botasaurus requires selenium==4.5.0, so don't specify selenium version
+beautifulsoup4==4.12.3
+lxml==5.1.0
+requests==2.31.0
+betterhtmlchunking>=0.1.0
+
+# LLM & OpenRouter
+openai==1.10.0
+httpx==0.27.2
+tiktoken==0.5.2
+
+# MCP (Model Context Protocol)
+mcp==1.0.0
+
+# Temporal Workflow Engine
+temporalio==1.5.1
+
+# MinIO/S3
+minio==7.2.3
+boto3==1.34.25
+
+# Utilities
+python-dotenv==1.0.0
+pytz==2023.3
+python-dateutil==2.8.2
+
+# Logging & Monitoring
+sentry-sdk[fastapi]==1.39.2
+structlog==24.1.0
+
+# Testing
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+
+# Development
+black==23.12.1
+flake8==7.0.0
+mypy==1.8.0

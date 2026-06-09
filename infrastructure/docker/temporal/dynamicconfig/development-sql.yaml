@@ -1,0 +1,31 @@
+# Temporal Dynamic Configuration for Development
+# This file configures Temporal server behavior
+
+# Enable search attributes
+system.forceSearchAttributesCacheRefreshOnRead:
+  - value: true
+    constraints: {}
+
+# Workflow execution limits
+limit.maxIDLength:
+  - value: 255
+    constraints: {}
+
+# History service configuration
+history.maxAutoResetPoints:
+  - value: 20
+    constraints: {}
+
+# Frontend service configuration
+frontend.enableClientVersionCheck:
+  - value: false
+    constraints: {}
+
+# Worker limits
+limit.numPendingActivities.error:
+  - value: 50000
+    constraints: {}
+
+limit.numPendingChildExecutions.error:
+  - value: 50000
+    constraints: {}

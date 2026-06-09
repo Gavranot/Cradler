@@ -1,0 +1,150 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: cradler-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cradler}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cradler_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-cradler}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cradler}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7-alpine
+    container_name: cradler-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO Object Storage (S3-compatible)
+  minio:
+    image: minio/minio:latest
+    container_name: cradler-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "9000:9000"  # API
+      - "9001:9001"  # Console
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # Temporal Server (Job Queue & Workflow Engine)
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: cradler-temporal
+    depends_on:
+      - postgres
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER:-cradler}
+      - POSTGRES_PWD=${POSTGRES_PASSWORD:-cradler_dev_password}
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    ports:
+      - "7233:7233"  # Temporal gRPC
+      - "8233:8233"  # Temporal Web UI
+    volumes:
+      - ./infrastructure/docker/temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
+
+  # Context7 MCP Server (Documentation Service)
+  context7:
+    image: node:20-alpine
+    container_name: cradler-context7
+    working_dir: /app
+    command: npx -y @upstash/context7-mcp@latest --transport http --port 3000
+    ports:
+      - "3001:3000"  # MCP server port
+    healthcheck:
+      test: ["CMD", "sh", "-c", "nc -z localhost 3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../infrastructure/docker/Dockerfile.backend
+    container_name: cradler-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+      context7:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-cradler}:${POSTGRES_PASSWORD:-cradler_dev_password}@postgres:5432/${POSTGRES_DB:-cradler}
+      - REDIS_URL=redis://redis:6379/0
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_EXTERNAL_ENDPOINT=localhost:9000
+      - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - TEMPORAL_HOST=temporal:7233
+      - CONTEXT7_HOST=context7:3000
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /var/run/docker.sock:/var/run/docker.sock  # For container isolation
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --reload-exclude 'scrapers/**'
+
+  # Frontend (Vue 3)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../infrastructure/docker/Dockerfile.frontend
+    container_name: cradler-frontend
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000/api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+
+networks:
+  default:
+    name: cradler-network
