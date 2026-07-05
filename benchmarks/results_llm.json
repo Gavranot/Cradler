@@ -1,0 +1,1085 @@
+{
+ "model": "deepseek/deepseek-v4-pro",
+ "arms": {
+  "design": {
+   "allbirds/detail": {
+    "context_tokens": 1690,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "h1.font-serif.text-2xl",
+       "attr": null
+      },
+      {
+       "name": "price",
+       "css": "span.text-black",
+       "attr": null
+      },
+      {
+       "name": "image",
+       "css": "a[data-product-images] img[data-product-handle][src]",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "allbirds/listing": {
+    "context_tokens": 1474,
+    "attempts": 2,
+    "passed": false,
+    "errors": [
+     "reply was not valid JSON"
+    ],
+    "spec": null,
+    "error_history": [
+     [
+      "name: relative selector yields values on only 9/20 cards",
+      "price: relative selector yields values on only 9/20 cards",
+      "url: relative selector yields values on only 9/20 cards"
+     ],
+     [
+      "reply was not valid JSON"
+     ]
+    ]
+   },
+   "barefootbuttons/detail": {
+    "context_tokens": 2981,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": ".product-title"
+      },
+      {
+       "name": "price",
+       "css": ".product-price-container .woocommerce-Price-amount"
+      },
+      {
+       "name": "image",
+       "css": "img.wp-post-image",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "barefootbuttons/listing": {
+    "context_tokens": 762,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "#main > div.row > div.col > div.shop-container > div.page-description > div.row div.has-post-thumbnail",
+     "fields": [
+      {
+       "name": "name",
+       "css": ".woocommerce-loop-product__title a"
+      },
+      {
+       "name": "price",
+       "css": ".price-wrapper .price"
+      },
+      {
+       "name": "url",
+       "css": "a.woocommerce-loop-product__link",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "beardbrand/detail": {
+    "context_tokens": 1726,
+    "attempts": 2,
+    "passed": false,
+    "errors": [
+     "price: selector \"[itemprop='price']\" matches nothing"
+    ],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": ".bundle-builder__title-template27915797135730bundlebuilder84xdjm h1"
+      },
+      {
+       "name": "price",
+       "css": "[itemprop='price']"
+      },
+      {
+       "name": "image",
+       "css": ".product-gallery-item:first-child img",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     [
+      "reply was not valid JSON"
+     ],
+     [
+      "price: selector \"[itemprop='price']\" matches nothing"
+     ]
+    ]
+   },
+   "beardbrand/listing": {
+    "context_tokens": 589,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "#main div.site-box.box__collection",
+     "fields": [
+      {
+       "name": "name",
+       "css": ".title"
+      },
+      {
+       "name": "price",
+       "css": ".price"
+      },
+      {
+       "name": "url",
+       "css": "a.product-item",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "bigcommerce-demo/detail": {
+    "context_tokens": 1512,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "h1.productView-title"
+      },
+      {
+       "name": "price",
+       "css": "[data-product-price-without-tax]"
+      },
+      {
+       "name": "image",
+       "css": ".productView-image a",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "bigcommerce-demo/listing": {
+    "context_tokens": 855,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "#product-listing-container > div > ul.productGrid > li.product",
+     "fields": [
+      {
+       "name": "name",
+       "css": ".card-title a"
+      },
+      {
+       "name": "price",
+       "css": ".price--withoutTax .price"
+      },
+      {
+       "name": "url",
+       "css": ".card-title a",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "bombas/detail": {
+    "context_tokens": 1342,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": ".gejKTR h1"
+      },
+      {
+       "name": "price",
+       "css": "[data-testid='detailsProductPrice'] p:first-of-type"
+      },
+      {
+       "name": "image",
+       "css": "img[src*='ctfassets.net']",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "books-toscrape/detail": {
+    "context_tokens": 636,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "h1"
+      },
+      {
+       "name": "price",
+       "css": ".price_color"
+      },
+      {
+       "name": "image",
+       "css": "#product_gallery .item.active img",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "books-toscrape/listing": {
+    "context_tokens": 366,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "li.col-lg-3",
+     "fields": [
+      {
+       "name": "name",
+       "css": "h3 a"
+      },
+      {
+       "name": "price",
+       "css": ".price_color"
+      },
+      {
+       "name": "url",
+       "css": "h3 a",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "gymshark/detail": {
+    "context_tokens": 1578,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "[data-testid='pdp-title-read']"
+      },
+      {
+       "name": "price",
+       "css": "[data-testid='pdp-totalValue-read']"
+      },
+      {
+       "name": "image",
+       "css": "button[data-testid='pdp-mediaImageMobile-0-select'] img",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "gymshark/listing": {
+    "context_tokens": 1004,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "#MainContent > div > div > div > div article",
+     "fields": [
+      {
+       "name": "name",
+       "css": "h4.product-card_product-title__CVoTa"
+      },
+      {
+       "name": "price",
+       "css": ".product-card_product-price__vFL1l"
+      },
+      {
+       "name": "url",
+       "css": "a.product-card_product-title-link__nDARd",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "hyva-magento/detail": {
+    "context_tokens": 1233,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "h1[itemprop='name']"
+      },
+      {
+       "name": "price",
+       "css": "meta[itemprop='price']",
+       "attr": "content"
+      },
+      {
+       "name": "image",
+       "css": "img[itemprop='image']",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "hyva-magento/listing": {
+    "context_tokens": 595,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "#product-list > div.products > ul.mx-auto li.flex-col",
+     "fields": [
+      {
+       "name": "name",
+       "css": ".product-item-link"
+      },
+      {
+       "name": "price",
+       "css": "span.price"
+      },
+      {
+       "name": "url",
+       "css": ".product-item-photo",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "rothys/detail": {
+    "context_tokens": 1759,
+    "attempts": 2,
+    "passed": false,
+    "errors": [
+     "reply was not valid JSON"
+    ],
+    "spec": null,
+    "error_history": [
+     [
+      "title: matched nodes do not contain expected value (got '')",
+      "price: matched nodes do not contain expected value (got '')"
+     ],
+     [
+      "reply was not valid JSON"
+     ]
+    ]
+   },
+   "vercel-commerce/detail": {
+    "context_tokens": 1140,
+    "attempts": 2,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "[id='S:2'] h1"
+      },
+      {
+       "name": "price",
+       "css": "[id='S:2'] div.bg-blue-600 p"
+      },
+      {
+       "name": "image",
+       "css": "meta[property='og:image']",
+       "attr": "content"
+      }
+     ]
+    },
+    "error_history": [
+     [
+      "image: selector \"img[alt='Acme Cowboy Hat']\" matches nothing"
+     ],
+     []
+    ]
+   },
+   "vercel-commerce/listing": {
+    "context_tokens": 412,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "[id='S:4'] > ul.grid li.transition-opacity",
+     "fields": [
+      {
+       "name": "name",
+       "css": "h3"
+      },
+      {
+       "name": "price",
+       "css": "p"
+      },
+      {
+       "name": "url",
+       "css": "a",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "webscraper-io/detail": {
+    "context_tokens": 697,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "h4[itemprop=\"name\"]"
+      },
+      {
+       "name": "price",
+       "css": "span[itemprop=\"price\"]"
+      },
+      {
+       "name": "image",
+       "css": "img[itemprop=\"image\"]",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "webscraper-io/listing": {
+    "context_tokens": 447,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "body > div.wrapper > main > div.container > div.row > div.col-lg-9 > div.row > div.col-lg-4",
+     "fields": [
+      {
+       "name": "name",
+       "css": "a.title"
+      },
+      {
+       "name": "price",
+       "css": "span[itemprop='price']"
+      },
+      {
+       "name": "url",
+       "css": "a.title",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   }
+  },
+  "fullpage": {
+   "allbirds/detail": {
+    "context_tokens": 49156,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "h1"
+      },
+      {
+       "name": "price",
+       "css": "[data-product-price]",
+       "attr": "data-product-price"
+      },
+      {
+       "name": "image",
+       "css": "img[fetchpriority='high']",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "allbirds/listing": {
+    "context_tokens": 50160,
+    "attempts": 2,
+    "passed": false,
+    "errors": [
+     "reply was not valid JSON"
+    ],
+    "spec": null,
+    "error_history": [
+     [
+      "record_selector matches 129 records, expected 40-90"
+     ],
+     [
+      "reply was not valid JSON"
+     ]
+    ]
+   },
+   "barefootbuttons/detail": {
+    "context_tokens": 46111,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "h1.product-title",
+       "attr": null
+      },
+      {
+       "name": "price",
+       "css": ".product-price-container .amount",
+       "attr": null
+      },
+      {
+       "name": "image",
+       "css": "img.wp-post-image",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "barefootbuttons/listing": {
+    "context_tokens": 48189,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": ".product-small.col.has-hover",
+     "fields": [
+      {
+       "name": "name",
+       "css": ".name.product-title a"
+      },
+      {
+       "name": "price",
+       "css": ".price-wrapper .price .woocommerce-Price-amount.amount"
+      },
+      {
+       "name": "url",
+       "css": ".name.product-title a",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "beardbrand/detail": {
+    "context_tokens": 40469,
+    "attempts": 2,
+    "passed": false,
+    "errors": [
+     "reply was not valid JSON"
+    ],
+    "spec": null,
+    "error_history": [
+     [
+      "price: matched nodes do not contain expected value (got '$0.00')"
+     ],
+     [
+      "reply was not valid JSON"
+     ]
+    ]
+   },
+   "beardbrand/listing": {
+    "context_tokens": 49483,
+    "attempts": 2,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "div.site-box-content.product-holder",
+     "fields": [
+      {
+       "name": "name",
+       "css": "a.product-item .title"
+      },
+      {
+       "name": "price",
+       "css": "a.product-item .price"
+      },
+      {
+       "name": "url",
+       "css": "a.product-item",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     [
+      "url: no relative selector"
+     ],
+     []
+    ]
+   },
+   "bigcommerce-demo/detail": {
+    "context_tokens": 14811,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "h1.productView-title"
+      },
+      {
+       "name": "price",
+       "css": ".price-section.price--withoutTax .price[data-product-price-without-tax]"
+      },
+      {
+       "name": "image",
+       "css": "img.productView-image--default",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "bigcommerce-demo/listing": {
+    "context_tokens": 17139,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "li.product",
+     "fields": [
+      {
+       "name": "name",
+       "css": ".card-title a"
+      },
+      {
+       "name": "price",
+       "css": "span.price[data-product-price-without-tax]"
+      },
+      {
+       "name": "url",
+       "css": ".card-title a",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "bombas/detail": {
+    "context_tokens": 23196,
+    "attempts": 2,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "h1[data-label='productDetails_title']"
+      },
+      {
+       "name": "price",
+       "css": "[data-testid='detailsProductPrice'] p:first-of-type"
+      },
+      {
+       "name": "image",
+       "css": "img[alt*='Ankle Socks']",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     [
+      "reply was not valid JSON"
+     ],
+     []
+    ]
+   },
+   "books-toscrape/detail": {
+    "context_tokens": 1525,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "h1"
+      },
+      {
+       "name": "price",
+       "css": "p.price_color"
+      },
+      {
+       "name": "image",
+       "css": ".item.active img",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "books-toscrape/listing": {
+    "context_tokens": 5710,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "article.product_pod",
+     "fields": [
+      {
+       "name": "name",
+       "css": "h3 a"
+      },
+      {
+       "name": "price",
+       "css": "div.product_price p.price_color"
+      },
+      {
+       "name": "url",
+       "css": "h3 a",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "gymshark/detail": {
+    "context_tokens": 39379,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "[data-testid='pdp-title-read']"
+      },
+      {
+       "name": "price",
+       "css": "[data-testid='pdp-totalValue-read']"
+      },
+      {
+       "name": "image",
+       "css": "[data-testid='pdp-mediaImageMobile-0-select'] img",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "gymshark/listing": {
+    "context_tokens": 46078,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "article.product-card_product-card__1T7k9",
+     "fields": [
+      {
+       "name": "name",
+       "css": "h4.product-card_product-title__CVoTa"
+      },
+      {
+       "name": "price",
+       "css": "span.product-card_product-price__vFL1l"
+      },
+      {
+       "name": "url",
+       "css": "a.product-card_product-title-link__nDARd",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "hyva-magento/detail": {
+    "context_tokens": 8508,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "h1[itemprop='name']"
+      },
+      {
+       "name": "price",
+       "css": ".price-wrapper .price"
+      },
+      {
+       "name": "image",
+       "css": "img[itemprop='image']",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "hyva-magento/listing": {
+    "context_tokens": 11419,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "ul[role='list'] > li",
+     "fields": [
+      {
+       "name": "name",
+       "css": "a.product-item-link"
+      },
+      {
+       "name": "price",
+       "css": "[data-price-type='finalPrice'] .price"
+      },
+      {
+       "name": "url",
+       "css": "a.product-item-link",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "rothys/detail": {
+    "context_tokens": 18314,
+    "attempts": 2,
+    "passed": false,
+    "errors": [
+     "reply was not valid JSON"
+    ],
+    "spec": null,
+    "error_history": [
+     [
+      "title: matched nodes do not contain expected value (got '')",
+      "price: matched nodes do not contain expected value (got '')"
+     ],
+     [
+      "reply was not valid JSON"
+     ]
+    ]
+   },
+   "vercel-commerce/detail": {
+    "context_tokens": 18832,
+    "attempts": 2,
+    "passed": false,
+    "errors": [
+     "price: selector '[id=\"S:2\"] p.bg-blue-600' matches nothing"
+    ],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "[id=\"S:2\"] h1"
+      },
+      {
+       "name": "price",
+       "css": "[id=\"S:2\"] p.bg-blue-600"
+      },
+      {
+       "name": "image",
+       "css": "[id=\"S:1\"] .aspect-square img",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     [
+      "title: invalid selector '#S:2 h1': Expected ident, got <NUMBER '2' at 3>",
+      "price: invalid selector '#S:2 p.bg-blue-600': Expected ident, got <NUMBER '2' at 3>",
+      "image: invalid selector '#S:1 .aspect-square img': Expected ident, got <NUMBER '1' at 3>"
+     ],
+     [
+      "price: selector '[id=\"S:2\"] p.bg-blue-600' matches nothing"
+     ]
+    ]
+   },
+   "vercel-commerce/listing": {
+    "context_tokens": 23019,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": "li.animate-fadeIn",
+     "fields": [
+      {
+       "name": "name",
+       "css": "h3"
+      },
+      {
+       "name": "price",
+       "css": "p.bg-blue-600"
+      },
+      {
+       "name": "url",
+       "css": "a[href]",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "webscraper-io/detail": {
+    "context_tokens": 1357,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "fields": [
+      {
+       "name": "title",
+       "css": "[itemprop='name']"
+      },
+      {
+       "name": "price",
+       "css": "[itemprop='price']"
+      },
+      {
+       "name": "image",
+       "css": "[itemprop='image']",
+       "attr": "src"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   },
+   "webscraper-io/listing": {
+    "context_tokens": 40013,
+    "attempts": 1,
+    "passed": true,
+    "errors": [],
+    "spec": {
+     "record_selector": ".col-md-4.col-xl-4.col-lg-4",
+     "fields": [
+      {
+       "name": "name",
+       "css": "a.title"
+      },
+      {
+       "name": "price",
+       "css": "h4.price span[itemprop='price']"
+      },
+      {
+       "name": "url",
+       "css": "a.title",
+       "attr": "href"
+      }
+     ]
+    },
+    "error_history": [
+     []
+    ]
+   }
+  }
+ },
+ "repair": {
+  "allbirds/detail": {
+   "skipped": "spec survived mutation (no repair needed)"
+  },
+  "barefootbuttons/detail": {
+   "skipped": "spec survived mutation (no repair needed)"
+  },
+  "bigcommerce-demo/detail": {
+   "skipped": "spec survived mutation (no repair needed)"
+  },
+  "books-toscrape/detail": {
+   "attempts": 1,
+   "passed": true,
+   "context_tokens": 733
+  },
+  "gymshark/detail": {
+   "skipped": "spec survived mutation (no repair needed)"
+  },
+  "hyva-magento/detail": {
+   "skipped": "spec survived mutation (no repair needed)"
+  },
+  "vercel-commerce/detail": {
+   "skipped": "spec survived mutation (no repair needed)"
+  },
+  "webscraper-io/detail": {
+   "skipped": "spec survived mutation (no repair needed)"
+  }
+ },
+ "spent_usd": 0.556,
+ "calls": 65
+}

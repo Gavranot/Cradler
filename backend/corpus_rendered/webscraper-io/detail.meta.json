@@ -1,0 +1,8 @@
+{
+  "url": "https://webscraper.io/test-sites/e-commerce/allinone/product/60",
+  "fetched_at": "2026-07-03T14:42:00.344075+00:00",
+  "bytes": 65029,
+  "dom_nodes_after_scroll": 239,
+  "hydration_sizes": {},
+  "renderer": "botasaurus"
+}

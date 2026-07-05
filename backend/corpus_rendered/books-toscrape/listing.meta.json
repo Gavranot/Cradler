@@ -1,0 +1,8 @@
+{
+  "url": "https://books.toscrape.com/catalogue/category/books/fiction_10/index.html",
+  "fetched_at": "2026-07-03T14:39:12.267920+00:00",
+  "bytes": 49704,
+  "dom_nodes_after_scroll": 545,
+  "hydration_sizes": {},
+  "renderer": "botasaurus"
+}

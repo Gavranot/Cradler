@@ -1,0 +1,119 @@
+{
+  "_doc": "Hand-verified expectations per corpus page. detail: values that MUST be locatable in the fragment shown to the LLM (or covered by the L0 path). visible=false means the value is not in the pre-render HTML at all (client-rendered) and cannot be expected from any static reduction. listing: sample card names/price that the exemplar-based fragment must make authorable, plus a sane record-count band validated against the FULL page.",
+  "allbirds/detail": {
+    "title": "Men's Dasher NZ",
+    "price": ["$140", ">140<", "\"140\""],
+    "image_hint": "PDP_LEFT",
+    "sku": {"value": "MENS_DASHER_NZ", "visible": false}
+  },
+  "barefootbuttons/detail": {
+    "title": "Barefoot Buttons V1 Standard Clear",
+    "price": ["9.95"],
+    "image_hint": "footswitch-topper",
+    "sku": {"value": "17-V1-ST-CR", "visible": true}
+  },
+  "beardbrand/detail": {
+    "title": "Custom Men’s Cologne Set",
+    "price": ["140"],
+    "image_hint": "cdn/shop"
+  },
+  "bigcommerce-demo/detail": {
+    "title": "Smith Journal 13",
+    "price": ["$25.00"],
+    "image_hint": "products"
+  },
+  "bombas/detail": {
+    "title": "Men's Solids Ankle Sock 4-Pack",
+    "price": {"value": "31.00", "visible": false, "note": "JSON-LD carries 3100 cents; DOM price is client-rendered"},
+    "image_hint": "layflat",
+    "sku": {"value": "A-E-A-101A01-MSOL-04P-SGBRS-L", "visible": false}
+  },
+  "books-toscrape/detail": {
+    "title": "Soumission",
+    "price": ["£50.10"],
+    "image_hint": ".jpg"
+  },
+  "gymshark/detail": {
+    "title": "Arrival 5\" Shorts",
+    "price": ["$26", "\"price\":26"],
+    "image_hint": "Arrival5Shorts"
+  },
+  "hyva-magento/detail": {
+    "title": "Arcade Record Cabinet",
+    "price": ["1,200.00", "1200"],
+    "image_hint": "arcade"
+  },
+  "rothys/detail": {
+    "title": "The Point II",
+    "price": ["$155"],
+    "image_hint": "cdn"
+  },
+  "vercel-commerce/detail": {
+    "title": "Acme Cowboy Hat",
+    "price": ["$160.00", "160.0"],
+    "image_hint": "cowboy-hat"
+  },
+  "webscraper-io/detail": {
+    "title": "Asus VivoBook X441NA-GA190",
+    "price": ["$295.99"],
+    "image_hint": "test-sites"
+  },
+
+  "allbirds/listing": {
+    "sample_names": ["Tree Runner NZ", "Wool Cruiser"],
+    "_correction": "'Canvas Cruiser' removed — it is a mega-menu nav link, not a grid card (GT labeling error, not a reduction failure)",
+    "price_marker": "$1",
+    "count_band": [40, 90],
+    "_band_basis": "66 cards independently verified productive (link+price) on the raw page"
+  },
+  "barefootbuttons/listing": {
+    "sample_names": ["V1 Standard Silver", "V1 Standard Black"],
+    "price_marker": "9.95",
+    "count_band": [20, 80]
+  },
+  "beardbrand/listing": {
+    "sample_names": ["Utility Beard Trimmer", "Beard Wash"],
+    "price_marker": "$",
+    "count_band": [15, 60]
+  },
+  "bigcommerce-demo/listing": {
+    "sample_names": ["Smith Journal 13", "Openhouse No. 3", "Kinfolk"],
+    "price_marker": "$25.00",
+    "count_band": [8, 20]
+  },
+  "bombas/listing": {
+    "sample_names": ["Ankle Sock"],
+    "price_marker": "MKD",
+    "count_band": [5, 60],
+    "_correction": "originally labeled no_grid — an artifact of the price regex not knowing geo-localized 'MKD 3,100' prices. The static page DOES carry a real partial SSR grid (~7 cards); the rendered page has the full 52."
+  },
+  "books-toscrape/listing": {
+    "sample_names": ["Soumission", "Private Paris", "We Love You, Charlie Freeman"],
+    "price_marker": "£",
+    "count_band": [15, 25]
+  },
+  "gymshark/listing": {
+    "sample_names": ["Crest Oversized Joggers", "Arrival 5\" Shorts"],
+    "price_marker": "$",
+    "count_band": [30, 90]
+  },
+  "hyva-magento/listing": {
+    "sample_names": ["Luna Brass Tray", "Forma Ceramic Sculpture"],
+    "price_marker": "€",
+    "count_band": [8, 16]
+  },
+  "rothys/listing": {
+    "expected_outcome": "no_grid",
+    "note": "grid is client-rendered (only 3 product hrefs in 1.4MB SSR HTML)"
+  },
+  "vercel-commerce/listing": {
+    "sample_names": ["Acme Cowboy Hat", "Acme Mug"],
+    "price_marker": "$160.00",
+    "count_band": [12, 24]
+  },
+  "webscraper-io/listing": {
+    "sample_names": ["Asus VivoBook", "Aspire E1-510"],
+    "price_marker": "$295.99",
+    "count_band": [60, 150]
+  }
+}

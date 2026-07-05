@@ -76,7 +76,13 @@ services:
     image: node:20-alpine
     container_name: cradler-context7
     working_dir: /app
-    command: npx -y @upstash/context7-mcp@latest --transport http --port 3000
+    # Pinned: @upstash/context7-mcp>=3.0.0 hard-requires UPSTASH_REDIS_REST_URL/
+    # TOKEN at startup (a Redis-backed session store added for Upstash's own
+    # multi-replica hosted deployment - unnecessary for one local container,
+    # and there's no opt-out flag). 2.3.0 is the last version without that
+    # requirement. @latest silently picked up the breaking change on a plain
+    # `docker-compose up` since this is npx, not a built image layer.
+    command: npx -y @upstash/context7-mcp@2.3.0 --transport http --port 3000
     ports:
       - "3001:3000"  # MCP server port
     healthcheck:
@@ -114,6 +120,8 @@ services:
       - TEMPORAL_HOST=temporal:7233
       - CONTEXT7_HOST=context7:3000
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - PRIMARY_AGENT_MODEL=${PRIMARY_AGENT_MODEL:-deepseek/deepseek-v3.2-exp}
+      - SECONDARY_AGENT_MODEL=${SECONDARY_AGENT_MODEL:-deepseek/deepseek-v3.1-terminus}
       - SENTRY_DSN=${SENTRY_DSN:-}
       - ENVIRONMENT=${ENVIRONMENT:-development}
     ports:
@@ -140,10 +148,54 @@ services:
       - /app/node_modules
     command: npm run dev
 
+  # Claude Code CLI - sandboxed coding agent scoped to this repo only.
+  # profiles:["claude"] means this service NEVER starts via a plain
+  # `docker-compose up` - it only runs via `docker-compose --profile claude
+  # run/exec ...`, which the scripts/claude-*.sh wrappers do for you.
+  # Deliberately does NOT mount /var/run/docker.sock (unlike `backend`) so it
+  # cannot control sibling containers or the host Docker daemon.
+  claude:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.claude
+    container_name: cradler-claude
+    profiles: ["claude"]
+    working_dir: /workspace
+    environment:
+      # Optional token-based auth (see scripts/claude-login.sh). Leave unset
+      # to use interactive `/login` instead - never set ANTHROPIC_API_KEY
+      # here, that would switch off Max-plan subscription auth.
+      - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:-}
+      # Claude Code normally splits config/auth across ~/.claude/ AND a
+      # separate ~/.claude.json file. Only the former was covered by the
+      # volume below, so login silently failed to persist. This env var
+      # consolidates everything into the one mounted directory.
+      - CLAUDE_CONFIG_DIR=/home/node/.claude
+      # Obsidian MCP server (see .mcp.json). Obsidian runs on the HOST, so
+      # inside the container "localhost" would point at the container itself -
+      # host.docker.internal is Docker's alias for the host machine. On the
+      # host, .mcp.json falls back to localhost, so the same file works both
+      # places. Token lives in .env, never in the image.
+      - OBSIDIAN_MCP_HOST=host.docker.internal
+      - OBSIDIAN_MCP_TOKEN=${OBSIDIAN_MCP_TOKEN:-}
+    volumes:
+      # Bind mount: ONLY this repo, live two-way sync with the host. Not the
+      # whole home directory, not ~/.ssh, not cloud credentials.
+      - .:/workspace
+      # Named volume: persists Claude's auth/config across container
+      # restarts and rebuilds, so login only happens once. Must line up
+      # with CLAUDE_CONFIG_DIR above.
+      - claude_config:/home/node/.claude
+    stdin_open: true
+    tty: true
+    networks:
+      - default
+
 volumes:
   postgres_data:
   redis_data:
   minio_data:
+  claude_config:
 
 networks:
   default:

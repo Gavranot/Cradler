@@ -1,0 +1,8 @@
+{
+  "url": "https://books.toscrape.com/catalogue/soumission_998/index.html",
+  "fetched_at": "2026-07-03T14:38:55.725459+00:00",
+  "bytes": 12392,
+  "dom_nodes_after_scroll": 135,
+  "hydration_sizes": {},
+  "renderer": "botasaurus"
+}

@@ -26,9 +26,16 @@ pyjwt==2.8.0
 # Web Scraping
 botasaurus==4.0.7
 botasaurus-driver==4.0.7
+# botasaurus-driver 4.0.7 declares websockets>=11 unbounded, but its CDP layer
+# uses the legacy `.closed` API that websockets 14 removed — unpinned installs
+# get 16.x and Chrome launches die with "'NoneType' object has no attribute
+# 'closed'" (connection.py delegates the failed property lookup to a None target)
+websockets>=11,<14
 # Note: Botasaurus requires selenium==4.5.0, so don't specify selenium version
 beautifulsoup4==4.12.3
 lxml==5.1.0
+cssselect==1.2.0
+extruct==0.18.0
 requests==2.31.0
 betterhtmlchunking>=0.1.0
 

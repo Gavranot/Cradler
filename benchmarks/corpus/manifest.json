@@ -1,0 +1,279 @@
+{
+  "books-toscrape/listing": {
+    "url": "https://books.toscrape.com/catalogue/category/books/fiction_10/index.html",
+    "status": 200,
+    "ok": true,
+    "bytes": 49657,
+    "platform_declared": "static",
+    "platform_detected": [],
+    "fetched_at": "2026-07-03T11:08:43.946277+00:00",
+    "page_type": "listing"
+  },
+  "books-toscrape/detail": {
+    "url": "https://books.toscrape.com/catalogue/soumission_998/index.html",
+    "status": 200,
+    "ok": true,
+    "bytes": 12339,
+    "platform_declared": "static",
+    "platform_detected": [],
+    "fetched_at": "2026-07-03T11:08:45.744702+00:00",
+    "page_type": "detail"
+  },
+  "webscraper-io/listing": {
+    "url": "https://webscraper.io/test-sites/e-commerce/allinone/computers/laptops",
+    "status": 200,
+    "ok": true,
+    "bytes": 164630,
+    "platform_declared": "static",
+    "platform_detected": [
+      "magento"
+    ],
+    "fetched_at": "2026-07-03T11:08:47.851335+00:00",
+    "page_type": "listing"
+  },
+  "webscraper-io/detail": {
+    "url": "https://webscraper.io/test-sites/e-commerce/allinone/product/60",
+    "status": 200,
+    "ok": true,
+    "bytes": 13608,
+    "platform_declared": "static",
+    "platform_detected": [
+      "magento"
+    ],
+    "fetched_at": "2026-07-03T11:08:49.681371+00:00",
+    "page_type": "detail"
+  },
+  "allbirds/listing": {
+    "url": "https://www.allbirds.com/collections/mens-shoes",
+    "status": 200,
+    "ok": true,
+    "bytes": 3455470,
+    "platform_declared": "shopify",
+    "platform_detected": [
+      "shopify",
+      "magento"
+    ],
+    "fetched_at": "2026-07-03T11:08:53.510533+00:00",
+    "page_type": "listing"
+  },
+  "allbirds/detail": {
+    "url": "https://www.allbirds.com/products/mens-dasher-nz-natural-black-blizzard",
+    "status": 200,
+    "ok": true,
+    "bytes": 890627,
+    "platform_declared": "shopify",
+    "platform_detected": [
+      "shopify",
+      "magento"
+    ],
+    "fetched_at": "2026-07-03T11:10:17.993834+00:00",
+    "page_type": "detail"
+  },
+  "bombas/listing": {
+    "url": "https://bombas.com/collections/mens-socks",
+    "status": 200,
+    "ok": true,
+    "bytes": 1649150,
+    "platform_declared": "shopify",
+    "platform_detected": [
+      "shopify",
+      "magento",
+      "nextjs"
+    ],
+    "fetched_at": "2026-07-03T11:08:57.574025+00:00",
+    "page_type": "listing"
+  },
+  "bombas/detail": {
+    "url": "https://bombas.com/products/men-s-solid-ankle-four-pack?variant=storm-sage-mix",
+    "status": 200,
+    "ok": true,
+    "bytes": 499233,
+    "platform_declared": "shopify",
+    "platform_detected": [
+      "shopify",
+      "magento",
+      "nextjs"
+    ],
+    "fetched_at": "2026-07-03T11:09:00.047826+00:00",
+    "page_type": "detail"
+  },
+  "rothys/listing": {
+    "url": "https://rothys.com/collections/womens-shoes",
+    "status": 200,
+    "ok": true,
+    "bytes": 1433635,
+    "platform_declared": "shopify",
+    "platform_detected": [
+      "shopify",
+      "magento"
+    ],
+    "fetched_at": "2026-07-03T11:09:04.152055+00:00",
+    "page_type": "listing"
+  },
+  "rothys/detail": {
+    "url": "https://rothys.com/products/womens-pointed-toe-flat-black",
+    "status": 200,
+    "ok": true,
+    "bytes": 1721991,
+    "platform_detected": [
+      "shopify",
+      "magento"
+    ],
+    "fetched_at": "2026-07-03T11:23:27.688963+00:00",
+    "page_type": "detail"
+  },
+  "gymshark/listing": {
+    "url": "https://www.gymshark.com/collections/all-products/mens",
+    "status": 200,
+    "ok": true,
+    "bytes": 1669309,
+    "platform_declared": "shopify-headless",
+    "platform_detected": [
+      "shopify",
+      "magento",
+      "nextjs"
+    ],
+    "fetched_at": "2026-07-03T11:09:10.559277+00:00",
+    "page_type": "listing"
+  },
+  "gymshark/detail": {
+    "url": "https://www.gymshark.com/products/gymshark-arrival-5-shorts-black-ss22",
+    "status": 200,
+    "ok": true,
+    "bytes": 598669,
+    "platform_declared": "shopify-headless",
+    "platform_detected": [
+      "shopify",
+      "magento",
+      "nextjs"
+    ],
+    "fetched_at": "2026-07-03T11:10:21.430094+00:00",
+    "page_type": "detail"
+  },
+  "vercel-commerce/listing": {
+    "url": "https://demo.vercel.store/search",
+    "status": 200,
+    "ok": true,
+    "bytes": 224128,
+    "platform_declared": "nextjs",
+    "platform_detected": [
+      "shopify",
+      "magento",
+      "nextjs"
+    ],
+    "fetched_at": "2026-07-03T11:09:12.887604+00:00",
+    "page_type": "listing"
+  },
+  "vercel-commerce/detail": {
+    "url": "https://demo.vercel.store/product/acme-cowboy-hat",
+    "status": 200,
+    "ok": true,
+    "bytes": 213535,
+    "platform_declared": "nextjs",
+    "platform_detected": [
+      "shopify",
+      "magento",
+      "nextjs"
+    ],
+    "fetched_at": "2026-07-03T11:09:15.024026+00:00",
+    "page_type": "detail"
+  },
+  "bigcommerce-demo/listing": {
+    "url": "https://cornerstone-light-demo.mybigcommerce.com/shop-all/",
+    "status": 200,
+    "ok": true,
+    "bytes": 131417,
+    "platform_declared": "bigcommerce",
+    "platform_detected": [
+      "bigcommerce"
+    ],
+    "fetched_at": "2026-07-03T11:09:17.701509+00:00",
+    "page_type": "listing"
+  },
+  "bigcommerce-demo/detail": {
+    "url": "https://cornerstone-light-demo.mybigcommerce.com/all/smith-journal-13/",
+    "status": 200,
+    "ok": true,
+    "bytes": 108667,
+    "platform_detected": [
+      "bigcommerce"
+    ],
+    "fetched_at": "2026-07-03T11:24:41.547521+00:00",
+    "page_type": "detail"
+  },
+  "beardbrand/listing": {
+    "url": "https://www.beardbrand.com/collections/beard-care",
+    "status": 200,
+    "ok": true,
+    "bytes": 629861,
+    "platform_declared": "shopify",
+    "platform_detected": [
+      "shopify",
+      "magento"
+    ],
+    "fetched_at": "2026-07-03T11:09:23.851237+00:00",
+    "page_type": "listing"
+  },
+  "beardbrand/detail": {
+    "url": "https://www.beardbrand.com/products/custom-mens-cologne-set",
+    "status": 200,
+    "ok": true,
+    "bytes": 544890,
+    "platform_declared": "shopify",
+    "platform_detected": [
+      "shopify",
+      "magento"
+    ],
+    "fetched_at": "2026-07-03T11:09:25.738044+00:00",
+    "page_type": "detail"
+  },
+  "hyva-magento/listing": {
+    "url": "https://demo.hyva.io/default/accessories.html",
+    "status": 200,
+    "ok": true,
+    "bytes": 491152,
+    "platform_declared": "magento",
+    "platform_detected": [
+      "magento"
+    ],
+    "fetched_at": "2026-07-03T11:11:03.022322+00:00",
+    "page_type": "listing"
+  },
+  "hyva-magento/detail": {
+    "url": "https://demo.hyva.io/default/arcade-record-cabinet.html",
+    "status": 200,
+    "ok": true,
+    "bytes": 429029,
+    "platform_detected": [
+      "magento"
+    ],
+    "fetched_at": "2026-07-03T11:22:54.611379+00:00",
+    "page_type": "detail"
+  },
+  "barefootbuttons/listing": {
+    "url": "https://barefootbuttons.com/shop/",
+    "status": 200,
+    "ok": true,
+    "bytes": 331035,
+    "platform_declared": "woocommerce",
+    "platform_detected": [
+      "woocommerce",
+      "magento"
+    ],
+    "fetched_at": "2026-07-03T11:11:59.796296+00:00",
+    "page_type": "listing"
+  },
+  "barefootbuttons/detail": {
+    "url": "https://barefootbuttons.com/product/v1-standard-acrylic-clear-footswitch-topper/",
+    "status": 200,
+    "ok": true,
+    "bytes": 297269,
+    "platform_declared": "woocommerce",
+    "platform_detected": [
+      "woocommerce",
+      "magento"
+    ],
+    "fetched_at": "2026-07-03T11:12:02.303972+00:00",
+    "page_type": "detail"
+  }
+}

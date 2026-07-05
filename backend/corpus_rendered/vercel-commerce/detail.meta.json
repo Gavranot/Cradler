@@ -1,0 +1,8 @@
+{
+  "url": "https://demo.vercel.store/product/acme-cowboy-hat",
+  "fetched_at": "2026-07-03T14:41:28.498068+00:00",
+  "bytes": 233618,
+  "dom_nodes_after_scroll": 336,
+  "hydration_sizes": {},
+  "renderer": "botasaurus"
+}

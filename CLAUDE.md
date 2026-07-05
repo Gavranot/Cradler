@@ -128,7 +128,7 @@ Shared data layer: PostgreSQL + pgvector + Redis + S3
 **Data Extraction:**
 - `driver.text(selector)`
 - `driver.links(selector)`
-- `driver.bs4` - BeautifulSoup integration
+- `soupify(driver)` - BeautifulSoup integration (`from botasaurus.soupify import soupify`; `driver.bs4` does NOT exist in 4.x)
 
 **Anti-Detection:**
 - `driver.short_random_sleep()` - Human-like delays

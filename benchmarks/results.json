@@ -1,0 +1,593 @@
+{
+ "allbirds/detail": {
+  "tokens": {
+   "raw": 271587,
+   "prod": 55689,
+   "design": 1510
+  },
+  "source_layer": "L2b",
+  "classifier": {
+   "predicted": "detail",
+   "actual": "detail"
+  },
+  "l0": {
+   "coverage": 1.0,
+   "cross_check": {
+    "name": true,
+    "price": true
+   },
+   "skip_candidate": true,
+   "sources": [
+    "json-ld:Product"
+   ]
+  },
+  "checks": {
+   "title": "frag",
+   "price": "frag",
+   "image_hint": "frag",
+   "sku": "n/a (not in pre-render HTML)"
+  },
+  "seconds": 0.08
+ },
+ "allbirds/listing": {
+  "tokens": {
+   "raw": 1123440,
+   "prod": 451914,
+   "design": 1415
+  },
+  "source_layer": "L2a",
+  "classifier": {
+   "predicted": "listing",
+   "actual": "listing"
+  },
+  "l0": {
+   "coverage": 0.0,
+   "cross_check": {},
+   "skip_candidate": false,
+   "sources": []
+  },
+  "checks": {
+   "count": "ok (66)",
+   "price_coverage": "ok (50/50)",
+   "sample_names_covered": "ok",
+   "exemplar_authorable": "ok"
+  },
+  "seconds": 0.08
+ },
+ "barefootbuttons/detail": {
+  "tokens": {
+   "raw": 85859,
+   "prod": 46101,
+   "design": 2806
+  },
+  "source_layer": "L2b",
+  "classifier": {
+   "predicted": "detail",
+   "actual": "detail"
+  },
+  "l0": {
+   "coverage": 0.5,
+   "cross_check": {
+    "name": true
+   },
+   "skip_candidate": false,
+   "sources": [
+    "json-ld:Product"
+   ]
+  },
+  "checks": {
+   "title": "frag",
+   "price": "frag",
+   "image_hint": "frag",
+   "sku": "frag"
+  },
+  "seconds": 0.04
+ },
+ "barefootbuttons/listing": {
+  "tokens": {
+   "raw": 94163,
+   "prod": 57423,
+   "design": 711
+  },
+  "source_layer": "L2a",
+  "classifier": {
+   "predicted": "listing",
+   "actual": "listing"
+  },
+  "l0": {
+   "coverage": 0.0,
+   "cross_check": {},
+   "skip_candidate": false,
+   "sources": []
+  },
+  "checks": {
+   "count": "ok (61)",
+   "price_coverage": "ok (50/50)",
+   "sample_names_covered": "ok",
+   "exemplar_authorable": "ok"
+  },
+  "seconds": 0.03
+ },
+ "beardbrand/detail": {
+  "tokens": {
+   "raw": 139422,
+   "prod": 40459,
+   "design": 1554
+  },
+  "source_layer": "L2b",
+  "classifier": {
+   "predicted": "detail",
+   "actual": "detail"
+  },
+  "l0": {
+   "coverage": 1.0,
+   "cross_check": {
+    "name": true,
+    "price": true
+   },
+   "skip_candidate": true,
+   "sources": [
+    "json-ld:Product"
+   ]
+  },
+  "checks": {
+   "title": "frag",
+   "price": "l0",
+   "image_hint": "frag"
+  },
+  "seconds": 0.04
+ },
+ "beardbrand/listing": {
+  "tokens": {
+   "raw": 184508,
+   "prod": 64417,
+   "design": 558
+  },
+  "source_layer": "L2a",
+  "classifier": {
+   "predicted": "listing",
+   "actual": "listing"
+  },
+  "l0": {
+   "coverage": 0.0,
+   "cross_check": {},
+   "skip_candidate": false,
+   "sources": []
+  },
+  "checks": {
+   "count": "ok (15)",
+   "price_coverage": "ok (10/15)",
+   "sample_names_covered": "ok",
+   "exemplar_authorable": "ok"
+  },
+  "seconds": 0.05
+ },
+ "bigcommerce-demo/detail": {
+  "tokens": {
+   "raw": 28028,
+   "prod": 14801,
+   "design": 1303
+  },
+  "source_layer": "L2b",
+  "classifier": {
+   "predicted": "detail",
+   "actual": "detail"
+  },
+  "l0": {
+   "coverage": 1.0,
+   "cross_check": {
+    "name": true,
+    "price": true
+   },
+   "skip_candidate": true,
+   "sources": [
+    "json-ld:Product"
+   ]
+  },
+  "checks": {
+   "title": "frag",
+   "price": "frag",
+   "image_hint": "frag"
+  },
+  "seconds": 0.01
+ },
+ "bigcommerce-demo/listing": {
+  "tokens": {
+   "raw": 32297,
+   "prod": 17130,
+   "design": 814
+  },
+  "source_layer": "L2a",
+  "classifier": {
+   "predicted": "listing",
+   "actual": "listing"
+  },
+  "l0": {
+   "coverage": 0.0,
+   "cross_check": {},
+   "skip_candidate": false,
+   "sources": []
+  },
+  "checks": {
+   "count": "ok (12)",
+   "price_coverage": "ok (12/12)",
+   "sample_names_covered": "ok",
+   "exemplar_authorable": "ok"
+  },
+  "seconds": 0.01
+ },
+ "bombas/detail": {
+  "tokens": {
+   "raw": 161337,
+   "prod": 23186,
+   "design": 1007
+  },
+  "source_layer": "L2b",
+  "classifier": {
+   "predicted": "detail",
+   "actual": "detail"
+  },
+  "l0": {
+   "coverage": 1.0,
+   "cross_check": {
+    "name": true,
+    "price": true
+   },
+   "skip_candidate": true,
+   "sources": [
+    "json-ld:Product"
+   ]
+  },
+  "checks": {
+   "title": "frag",
+   "price": "n/a (not in pre-render HTML)",
+   "image_hint": "frag",
+   "sku": "n/a (not in pre-render HTML)"
+  },
+  "seconds": 0.02
+ },
+ "bombas/listing": {
+  "tokens": {
+   "raw": 575310,
+   "prod": 86319,
+   "design": 4232
+  },
+  "source_layer": "L2a",
+  "classifier": {
+   "predicted": "listing",
+   "actual": "listing"
+  },
+  "l0": {
+   "coverage": 0.0,
+   "cross_check": {},
+   "skip_candidate": false,
+   "sources": []
+  },
+  "checks": {
+   "count": "ok (7)",
+   "price_coverage": "ok (6/7)",
+   "sample_names_covered": "ok",
+   "exemplar_authorable": "ok"
+  },
+  "seconds": 0.04
+ },
+ "books-toscrape/detail": {
+  "tokens": {
+   "raw": 2915,
+   "prod": 1515,
+   "design": 626
+  },
+  "source_layer": "L2b",
+  "classifier": {
+   "predicted": "detail",
+   "actual": "detail"
+  },
+  "l0": {
+   "coverage": 0.0,
+   "cross_check": {},
+   "skip_candidate": false,
+   "sources": []
+  },
+  "checks": {
+   "title": "frag",
+   "price": "frag",
+   "image_hint": "frag"
+  },
+  "seconds": 0.0
+ },
+ "books-toscrape/listing": {
+  "tokens": {
+   "raw": 9419,
+   "prod": 5701,
+   "design": 307
+  },
+  "source_layer": "L2a",
+  "classifier": {
+   "predicted": "listing",
+   "actual": "listing"
+  },
+  "l0": {
+   "coverage": 0.0,
+   "cross_check": {},
+   "skip_candidate": false,
+   "sources": []
+  },
+  "checks": {
+   "count": "ok (20)",
+   "price_coverage": "ok (20/20)",
+   "sample_names_covered": "ok",
+   "exemplar_authorable": "ok"
+  },
+  "seconds": 0.01
+ },
+ "gymshark/detail": {
+  "tokens": {
+   "raw": 202096,
+   "prod": 39369,
+   "design": 1395
+  },
+  "source_layer": "L2b",
+  "classifier": {
+   "predicted": "detail",
+   "actual": "detail"
+  },
+  "l0": {
+   "coverage": 0.5,
+   "cross_check": {
+    "name": true
+   },
+   "skip_candidate": false,
+   "sources": [
+    "json-ld:Product"
+   ]
+  },
+  "checks": {
+   "title": "frag",
+   "price": "frag",
+   "image_hint": "frag"
+  },
+  "seconds": 0.03
+ },
+ "gymshark/listing": {
+  "tokens": {
+   "raw": 587150,
+   "prod": 256006,
+   "design": 964
+  },
+  "source_layer": "L2a",
+  "classifier": {
+   "predicted": "listing",
+   "actual": "listing"
+  },
+  "l0": {
+   "coverage": 0.0,
+   "cross_check": {},
+   "skip_candidate": false,
+   "sources": []
+  },
+  "checks": {
+   "count": "ok (60)",
+   "price_coverage": "ok (50/50)",
+   "sample_names_covered": "ok",
+   "exemplar_authorable": "ok"
+  },
+  "seconds": 0.11
+ },
+ "hyva-magento/detail": {
+  "tokens": {
+   "raw": 91642,
+   "prod": 8498,
+   "design": 1127
+  },
+  "source_layer": "L2b",
+  "classifier": {
+   "predicted": "detail",
+   "actual": "detail"
+  },
+  "l0": {
+   "coverage": 1.0,
+   "cross_check": {
+    "name": true,
+    "price": true
+   },
+   "skip_candidate": true,
+   "sources": [
+    "microdata:Product"
+   ]
+  },
+  "checks": {
+   "title": "frag",
+   "price": "frag",
+   "image_hint": "frag"
+  },
+  "seconds": 0.01
+ },
+ "hyva-magento/listing": {
+  "tokens": {
+   "raw": 120824,
+   "prod": 11410,
+   "design": 554
+  },
+  "source_layer": "L2a",
+  "classifier": {
+   "predicted": "listing",
+   "actual": "listing"
+  },
+  "l0": {
+   "coverage": 0.0,
+   "cross_check": {},
+   "skip_candidate": false,
+   "sources": []
+  },
+  "checks": {
+   "count": "ok (12)",
+   "price_coverage": "ok (11/12)",
+   "sample_names_covered": "ok",
+   "exemplar_authorable": "ok"
+  },
+  "seconds": 0.02
+ },
+ "rothys/detail": {
+  "tokens": {
+   "raw": 483706,
+   "prod": 18304,
+   "design": 1636
+  },
+  "source_layer": "L2b",
+  "classifier": {
+   "predicted": "detail",
+   "actual": "detail"
+  },
+  "l0": {
+   "coverage": 0.5,
+   "cross_check": {
+    "name": true
+   },
+   "skip_candidate": false,
+   "sources": [
+    "json-ld:Product"
+   ]
+  },
+  "checks": {
+   "title": "frag",
+   "price": "frag",
+   "image_hint": "frag"
+  },
+  "seconds": 0.04
+ },
+ "rothys/listing": {
+  "tokens": {
+   "raw": 425460,
+   "prod": 16287,
+   "design": 243
+  },
+  "source_layer": "L2a",
+  "classifier": {
+   "predicted": "listing",
+   "actual": "listing"
+  },
+  "l0": {
+   "coverage": 0.0,
+   "cross_check": {},
+   "skip_candidate": false,
+   "sources": []
+  },
+  "checks": {
+   "no_grid_reported": "ok"
+  },
+  "seconds": 0.04
+ },
+ "vercel-commerce/detail": {
+  "tokens": {
+   "raw": 72380,
+   "prod": 18822,
+   "design": 986
+  },
+  "source_layer": "L2b",
+  "classifier": {
+   "predicted": "detail",
+   "actual": "detail"
+  },
+  "l0": {
+   "coverage": 1.0,
+   "cross_check": {
+    "name": true,
+    "price": true
+   },
+   "skip_candidate": true,
+   "sources": [
+    "json-ld:Product"
+   ]
+  },
+  "checks": {
+   "title": "frag",
+   "price": "frag",
+   "image_hint": "l0"
+  },
+  "seconds": 0.01
+ },
+ "vercel-commerce/listing": {
+  "tokens": {
+   "raw": 76102,
+   "prod": 23010,
+   "design": 372
+  },
+  "source_layer": "L2a",
+  "classifier": {
+   "predicted": "listing",
+   "actual": "listing"
+  },
+  "l0": {
+   "coverage": 0.0,
+   "cross_check": {},
+   "skip_candidate": false,
+   "sources": []
+  },
+  "checks": {
+   "count": "ok (18)",
+   "price_coverage": "ok (18/18)",
+   "sample_names_covered": "ok",
+   "exemplar_authorable": "ok"
+  },
+  "seconds": 0.01
+ },
+ "webscraper-io/detail": {
+  "tokens": {
+   "raw": 4033,
+   "prod": 1347,
+   "design": 576
+  },
+  "source_layer": "L2b",
+  "classifier": {
+   "predicted": "detail",
+   "actual": "detail"
+  },
+  "l0": {
+   "coverage": 1.0,
+   "cross_check": {
+    "name": true,
+    "price": true
+   },
+   "skip_candidate": true,
+   "sources": [
+    "microdata:Product"
+   ]
+  },
+  "checks": {
+   "title": "frag",
+   "price": "frag",
+   "image_hint": "frag"
+  },
+  "seconds": 0.0
+ },
+ "webscraper-io/listing": {
+  "tokens": {
+   "raw": 49158,
+   "prod": 40004,
+   "design": 393
+  },
+  "source_layer": "L2a",
+  "classifier": {
+   "predicted": "listing",
+   "actual": "listing"
+  },
+  "l0": {
+   "coverage": 0.0,
+   "cross_check": {
+    "name": false,
+    "price": true
+   },
+   "skip_candidate": false,
+   "sources": [
+    "microdata:Product"
+   ]
+  },
+  "checks": {
+   "count": "ok (117)",
+   "price_coverage": "ok (50/50)",
+   "sample_names_covered": "ok",
+   "exemplar_authorable": "ok"
+  },
+  "seconds": 0.04
+ }
+}

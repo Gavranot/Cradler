@@ -59,6 +59,29 @@ class Context7Client:
 
         return headers
 
+    @staticmethod
+    def _parse_mcp_response(response) -> Dict[str, Any]:
+        """Parse an MCP HTTP response that may be plain JSON or SSE-framed.
+
+        With `Accept: application/json, text/event-stream` (required to avoid
+        406), the server is free to answer either way — Context7 2.3.0 streams
+        SSE (`event: message\\ndata: {...}`) at least for `initialize`, which
+        made a bare response.json() raise mid-handshake. Take the last `data:`
+        payload of an SSE body; fall through to .json() otherwise.
+        """
+        content_type = response.headers.get("content-type", "")
+        body = response.text
+        if "text/event-stream" in content_type or body.lstrip().startswith(("event:", "data:")):
+            last_data = None
+            for line in body.splitlines():
+                if line.startswith("data:"):
+                    last_data = line[len("data:"):].strip()
+            if last_data:
+                import json as _json
+                return _json.loads(last_data)
+            raise ValueError("SSE response contained no data frames")
+        return response.json()
+
     async def _ensure_initialized(self) -> None:
         """Ensure MCP session is initialized"""
         if self.session_id is None:
@@ -101,7 +124,7 @@ class Context7Client:
                     logger.info(f"MCP session established: {session_id}")
 
                 response.raise_for_status()
-                result = response.json()
+                result = self._parse_mcp_response(response)
 
                 logger.info(f"Context7 server capabilities: {result.get('result', {}).get('capabilities', {})}")
                 return result
@@ -166,7 +189,7 @@ class Context7Client:
                     return await self._call_mcp_tool(tool_name, arguments)
 
                 response.raise_for_status()
-                result = response.json()
+                result = self._parse_mcp_response(response)
 
                 # Extract result from JSON-RPC response
                 if "error" in result:

@@ -18,8 +18,21 @@ from .network_analysis import NetworkAnalysisTool
 from .dom_analysis import DOMAnalysisTool
 from .file_system import FileSystemTool
 from .context7_client import Context7Client
+from .reduction import build_fragment, extract_structured, cross_check
+from .reduction.listing import mine_listing
+from .reduction.reduce import reduce_html
+from .reduction.tokens import count_tokens
 
 logger = logging.getLogger(__name__)
+
+
+def _truncate_tokens(text: str, budget: int) -> str:
+    """Hard-cap a string at ~budget tokens (escalation path safety valve)."""
+    tokens = count_tokens(text)
+    if tokens <= budget:
+        return text
+    keep = int(len(text) * budget / tokens)
+    return text[:keep] + f"\n<!-- TRUNCATED at ~{budget} tokens (page had {tokens:,}) -->"
 
 
 class GenerationSession:
@@ -33,7 +46,10 @@ class GenerationSession:
         self.user_id = user_id
         self.scraper_id = scraper_id
         self.browser_session_id: Optional[str] = None
-        self.html_content: Optional[str] = None
+        self.html_content: Optional[str] = None   # L1-reduced FULL html (DOM tools)
+        self.raw_html: Optional[str] = None       # untouched page source (validation)
+        self.page_url: Optional[str] = None
+        self.fragment = None                      # ReducedFragment routed to the LLM
         self.created_at = datetime.utcnow()
 
     def __repr__(self):
@@ -91,56 +107,18 @@ class MCPToolsManager:
         return None
 
     def _remove_boilerplate(self, html: str) -> str:
+        """Universal HTML reduction (Layer 1 of the reduction pipeline).
+
+        Replaces the old BeautifulSoup cleaner, which stripped ALL <script>/<meta>
+        (destroying JSON-LD/OpenGraph before Layer 0 could read them) and deleted
+        breadcrumbs with the nav bar. See agents/mcp/reduction/reduce.py.
+        NOTE: callers that need structured data must probe the RAW html first.
         """
-        Remove non-content HTML elements to reduce token usage
-
-        Removes:
-        - Navigation, headers, footers
-        - Scripts, styles, SVGs
-        - Cookie banners, modals
-        - Comments
-
-        Args:
-            html: Raw HTML content
-
-        Returns:
-            Cleaned HTML with 40-60% token reduction
-        """
-        soup = BeautifulSoup(html, 'lxml')
-
-        # Remove script and style tags
-        for tag in soup(['script', 'style', 'link', 'meta', 'noscript']):
-            tag.decompose()
-
-        # Remove common boilerplate containers
-        boilerplate_selectors = [
-            'nav', 'header', 'footer', 'aside',
-            '[role="navigation"]', '[role="banner"]',
-            '[role="contentinfo"]', '[role="complementary"]',
-            '[class*="cookie"]', '[class*="banner"]',
-            '[class*="modal"]', '[id*="popup"]',
-            '[class*="sidebar"]', '[class*="menu"]'
-        ]
-
-        for selector in boilerplate_selectors:
-            for elem in soup.select(selector):
-                elem.decompose()
-
-        # Remove SVG (images handled by selectors, SVG is decorative)
-        for svg in soup.find_all('svg'):
-            svg.decompose()
-
-        # Remove HTML comments
-        for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
-            comment.extract()
-
-        cleaned_html = str(soup)
-
-        reduction_pct = 100 * (len(html) - len(cleaned_html)) / len(html) if len(html) > 0 else 0
-        logger.info(f"[BOILERPLATE] Removed {len(html) - len(cleaned_html):,} chars "
-                   f"({reduction_pct:.1f}% reduction)")
-
-        return cleaned_html
+        result = reduce_html(html)
+        reduction_pct = 100 * (len(html) - len(result.html)) / len(html) if html else 0
+        logger.info(f"[REDUCTION-L1] {len(html) - len(result.html):,} chars removed "
+                    f"({reduction_pct:.1f}%)")
+        return result.html
 
     async def _ensure_browser_session(self, session: GenerationSession) -> str:
         """
@@ -215,13 +193,32 @@ class MCPToolsManager:
                 "function": {
                     "name": "browser_get_page_source",
                     "description": (
-                        "Get HTML source code of the current page. "
+                        "Get a REDUCED view of the current page, plus any machine-readable "
+                        "product data (JSON-LD/microdata) found on it. "
                         "PREREQUISITE: Must call browser_navigate first. "
-                        "The HTML is automatically cached for DOM analysis tools."
+                        "\n\n"
+                        "Returns:\n"
+                        "- structured_data: cross-checked product fields from JSON-LD/microdata "
+                        "(if present, prefer these over HTML scraping — they are what the site "
+                        "itself renders from)\n"
+                        "- fragment: listing pages → ONE exemplar product card + record count + "
+                        "container/record selectors (write field selectors relative to the card); "
+                        "detail pages → anchored DOM slices around title/price/image/etc. with "
+                        "missing anchors reported\n"
+                        "- notes: what reduction did, so you know what was removed\n"
+                        "\n"
+                        "The full page stays cached for DOM analysis tools. If the fragment lacks "
+                        "a node you need, call again with full=true to get the full (reduced) page."
                     ),
                     "parameters": {
                         "type": "object",
-                        "properties": {},
+                        "properties": {
+                            "full": {
+                                "type": "boolean",
+                                "description": "Escalation: return the full reduced page instead of the routed fragment (token-capped). Use only when the fragment is missing something.",
+                                "default": False
+                            }
+                        },
                         "required": []
                     }
                 }
@@ -498,23 +495,48 @@ class MCPToolsManager:
             # Cache HTML for DOM analysis
             if result.get("success") and "html" in result:
                 raw_html = result["html"]
+                page_url = result.get("url") or session.page_url or ""
 
-                # PHASE 0: Remove boilerplate
-                cleaned_html = self._remove_boilerplate(raw_html)
+                # L0 must see the RAW html — cleaning strips JSON-LD/meta
+                session.raw_html = raw_html
+                session.page_url = page_url
 
-                # Cache CLEANED HTML (not raw)
-                session.html_content = cleaned_html
+                # L0 + L1 + L2 routing → fragment for the LLM
+                fragment = build_fragment(raw_html, page_url)
+                session.fragment = fragment
 
-                # Parse cleaned HTML for DOM tool
-                await self.dom.parse_html(session.browser_session_id, cleaned_html)
+                # Cache the L1-reduced FULL page for DOM analysis tools
+                reduced_full = reduce_html(raw_html).html
+                session.html_content = reduced_full
+                await self.dom.parse_html(session.browser_session_id, reduced_full)
 
-                logger.info(f"[STATE] Cached cleaned HTML ({len(cleaned_html):,} chars, "
-                           f"original: {len(raw_html):,} chars)")
+                logger.info(
+                    f"[REDUCTION] {page_url}: raw {len(raw_html):,} chars → "
+                    f"fragment {fragment.est_tokens:,} tokens "
+                    f"(layer={fragment.source_layer}, type={fragment.page_type})")
 
-                # Return cleaned HTML to agent
-                result["html"] = cleaned_html
+                # structured-data summary (only cross-check-passing values)
+                sd = fragment.l0
+                structured = {}
+                if sd is not None and sd.product:
+                    structured = {k: v for k, v in sd.product.items() if v not in (None, "", [])}
+                del result["html"]
+                if arguments.get("full"):
+                    text = _truncate_tokens(reduced_full, 24000)
+                    result["fragment"] = text
+                    result["fragment_kind"] = "full-reduced (escalated)"
+                else:
+                    result["fragment"] = fragment.text
+                    result["fragment_kind"] = f"{fragment.page_type}/{fragment.source_layer}"
+                result["structured_data"] = structured
+                result["structured_data_cross_check"] = fragment.l0_cross_check
+                result["page_type"] = fragment.page_type
+                if fragment.listing_meta:
+                    result["listing"] = fragment.listing_meta
+                if fragment.anchors_found:
+                    result["anchors_found"] = fragment.anchors_found
+                result["notes"] = fragment.notes[-6:]
                 result["original_length"] = len(raw_html)
-                result["cleaned_length"] = len(cleaned_html)
 
             return result
 
@@ -557,7 +579,44 @@ class MCPToolsManager:
             logger.info(f"[STATE] Auto-injected browser_session_id: {session.browser_session_id}")
             logger.info(f"[STATE] Using cached HTML ({len(session.html_content)} chars)")
 
-            return await self.dom.detect_product_containers(session_id=session.browser_session_id)
+            # Primary: tag-path fingerprint mining (class-obfuscation-proof,
+            # precision-checked selectors). Legacy heuristic kept as fallback.
+            try:
+                extract = mine_listing(session.html_content)
+            except Exception as e:  # noqa: BLE001 - never let mining kill the loop
+                logger.warning(f"[PRODUCT DETECTION] fingerprint mining failed: {e}")
+                extract = None
+            if extract is not None:
+                return {
+                    "success": True,
+                    "method": "tag_path_fingerprint",
+                    # "corroborated" = price/image signals confirmed in cards;
+                    # "unconfirmed" = strongest repeated linked structure, but the
+                    # agent must inspect sample_html and DECIDE whether these are
+                    # product records (heuristics rank, only the LLM rejects)
+                    "confidence": extract.confidence,
+                    "signal_stats": extract.stats,
+                    "selector": f"{extract.container_css} > {extract.record_css}",
+                    "container_css": extract.container_css,
+                    "record_css": extract.record_css,
+                    "count": extract.record_count,
+                    "sample_html": extract.exemplar_html[:4000],
+                    "second_variant_html": (extract.second_exemplar_html or "")[:2000] or None,
+                    "notes": extract.notes,
+                }
+            legacy = await self.dom.detect_product_containers(
+                session_id=session.browser_session_id)
+            if legacy.get("success"):
+                legacy["notes"] = ["fingerprint mining found no plausible grid; "
+                                   "this result is from the legacy class-frequency "
+                                   "heuristic — validate before trusting"]
+                return legacy
+            return {
+                "success": False,
+                "message": ("No plausible product grid found. If this page should "
+                            "have one, it is likely client-rendered — the grid may "
+                            "need scrolling/waiting at fetch time."),
+            }
 
         elif tool_name == "dom_chunk_html":
             if not session.html_content:

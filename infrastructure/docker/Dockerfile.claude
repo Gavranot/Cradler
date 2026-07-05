@@ -1,0 +1,51 @@
+# Claude Code CLI sidecar image.
+#
+# Minimal, non-root image whose only job is to run the `claude` CLI against
+# the repo bind-mounted at /workspace. It does NOT install Python/backend
+# deps or the Docker CLI/socket — it edits files and runs `git`/`rg`, it does
+# not control sibling containers. If you later want it to drive the backend
+# or frontend containers directly, that's a deliberate follow-up change, not
+# a default here.
+FROM node:20-slim
+
+# git         - version control inside the container
+# ripgrep     - fast search, used heavily by Claude Code itself
+# ca-certificates/curl - TLS + fetching, needed for npm install and the CLI's own network calls
+# less/procps - quality-of-life for an interactive shell
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    ripgrep \
+    ca-certificates \
+    curl \
+    less \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Claude Code CLI, installed globally.
+RUN npm install -g @anthropic-ai/claude-code
+
+# Pre-create the config dir and own it as node:node BEFORE the named volume
+# gets mounted here. Without this, Docker creates the mount point owned by
+# root, and the non-root `node` user below silently fails to write
+# credentials to it (login reports success, but nothing persists).
+RUN mkdir -p /home/node/.claude && chown -R node:node /home/node/.claude
+
+# node:20-slim already ships a non-root "node" user (uid 1000) - reuse it
+# instead of creating a new one, and run as it explicitly.
+USER node
+
+# Auth/config lives here; docker-compose.yml mounts a named volume over this
+# path so login persists across container restarts/rebuilds.
+ENV HOME=/home/node
+
+# The bind-mounted repo is almost always owned by a different uid (the
+# host user) than the container's `node` (uid 1000), which trips git's
+# "dubious ownership" safety check on every `git` command. This writes the
+# exception to /home/node/.gitconfig only (not the host's git config, and
+# not a named volume, so it's rebuilt fresh with the image every time).
+RUN git config --global --add safe.directory /workspace
+
+WORKDIR /workspace
+
+# No CMD/ENTRYPOINT: this image is invoked with an explicit command
+# (bash, or `claude ...`) by the scripts/claude-*.sh wrappers.

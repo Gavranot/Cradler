@@ -514,9 +514,108 @@ async def get_scraper_run(
     return run
 
 
+async def _generate_scraper_background(scraper_id: UUID, user_id: UUID, db_url: str):
+    """Background task running the Secondary Agent generation workflow.
+
+    Mirrors `_execute_scraper_background`: generation takes minutes (a 30-iteration
+    agent loop), far beyond the frontend's 2-minute HTTP timeout — running it
+    inside the request made the browser error out while the backend kept working.
+    The frontend polls scraper status every 5s, so all results flow through the DB.
+    """
+    from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+    from sqlalchemy.orm import sessionmaker
+    from agents.secondary.agent import SecondaryAgent
+
+    if db_url.startswith("postgresql://"):
+        db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    elif db_url.startswith("postgresql+psycopg2://"):
+        db_url = db_url.replace("postgresql+psycopg2://", "postgresql+asyncpg://", 1)
+
+    engine = create_async_engine(db_url, echo=False)
+    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+    async with async_session() as db:
+        result = await db.execute(select(Scraper).where(Scraper.id == scraper_id))
+        scraper = result.scalar_one_or_none()
+        if not scraper:
+            logger.error(f"[GENERATION BACKGROUND] Scraper {scraper_id} not found")
+            await engine.dispose()
+            return
+        config = scraper.scraping_config or {}
+        data_fields = config.get("data_fields", [])
+        special_requirements = config.get("special_requirements")
+
+        try:
+            logger.info("[GENERATION BACKGROUND] Initializing Secondary Agent...")
+            agent = SecondaryAgent()
+            result = await agent.generate_scraper(
+                user_id=str(user_id),
+                scraper_id=str(scraper_id),
+                target_url=scraper.target_url,
+                data_fields=data_fields,
+                special_requirements=special_requirements
+            )
+            logger.info(f"[GENERATION BACKGROUND] Agent returned: success={result.get('success')}")
+
+            if result.get("success") and result.get("scraper_code"):
+                # Persist the final code at the executor's contract path: the
+                # agent names its working scripts freely (anhoch_scraper.py,
+                # *_improved.py, ...) but ScraperExecutor runs exactly
+                # scrapers/{user_id}/{scraper_id}/scraper.py.
+                try:
+                    from pathlib import Path
+                    scraper_dir = Path("scrapers") / str(user_id) / str(scraper_id)
+                    scraper_dir.mkdir(parents=True, exist_ok=True)
+                    (scraper_dir / "scraper.py").write_text(
+                        result["scraper_code"], encoding="utf-8")
+                    logger.info(f"[GENERATION BACKGROUND] Final code persisted to "
+                                f"{scraper_dir / 'scraper.py'}")
+                except OSError as e:
+                    logger.error(f"[GENERATION BACKGROUND] Could not write "
+                                 f"scraper.py: {e} — runs will fail until fixed")
+                scraper.scraping_config = {
+                    **config,
+                    "generated_code": result["scraper_code"],
+                    "test_results": result.get("test_results"),
+                    "analysis": result.get("analysis"),
+                    "reasoning_log": result.get("reasoning_log", []),
+                    "generation_completed_at": datetime.utcnow().isoformat(),
+                    "tool_calls": result.get("tool_calls", []),
+                    "iterations": result.get("iterations", 0),
+                    "final_message": result.get("final_message", "")
+                }
+                scraper.status = "active"
+            else:
+                scraper.scraping_config = {
+                    **config,
+                    "error": result.get("message", "Generation failed"),
+                    "reasoning_log": result.get("reasoning_log", []),
+                    "generation_failed_at": datetime.utcnow().isoformat(),
+                    "tool_calls": result.get("tool_calls", [])
+                }
+                scraper.status = "failed"
+            await db.commit()
+            logger.info(f"[GENERATION BACKGROUND] Completed, status={scraper.status}")
+        except Exception as e:
+            logger.error(f"[GENERATION BACKGROUND] {type(e).__name__}: {e}\n"
+                         f"{traceback.format_exc()}")
+            scraper.status = "failed"
+            scraper.scraping_config = {
+                **config,
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "traceback": traceback.format_exc(),
+                "generation_failed_at": datetime.utcnow().isoformat()
+            }
+            await db.commit()
+        finally:
+            await engine.dispose()
+
+
 @router.post("/{scraper_id}/generate", status_code=status.HTTP_202_ACCEPTED)
 async def generate_scraper_code(
     scraper_id: UUID,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -548,115 +647,28 @@ async def generate_scraper_code(
             detail="Scraper not found"
         )
 
-    # For MVP: Import and call Secondary Agent directly
-    # In production: This would queue a Temporal workflow
-    from agents.secondary.agent import SecondaryAgent
-
-    # Extract data fields from config
-    config = scraper.scraping_config or {}
-    data_fields = config.get("data_fields", [])
-    special_requirements = config.get("special_requirements")
-
-    # Update status to generating
+    # Mark as generating, then hand off to a background task — the agent loop
+    # takes minutes and must not run inside the request (the frontend times out
+    # at 2 minutes and polls scraper status instead).
     scraper.status = "generating"
     await db.commit()
 
     logger.info("="*80)
-    logger.info(f"[SCRAPER GENERATION ENDPOINT] Starting code generation")
-    logger.info(f"User ID: {current_user.id}")
-    logger.info(f"Scraper ID: {scraper_id}")
-    logger.info(f"Target URL: {scraper.target_url}")
-    logger.info(f"Data Fields: {data_fields}")
-    logger.info(f"Special Requirements: {special_requirements}")
+    logger.info(f"[SCRAPER GENERATION ENDPOINT] Queuing code generation")
+    logger.info(f"User ID: {current_user.id} | Scraper ID: {scraper_id} | "
+                f"Target URL: {scraper.target_url}")
     logger.info("="*80)
 
-    try:
-        # Initialize Secondary Agent
-        logger.debug("Initializing Secondary Agent...")
-        agent = SecondaryAgent()
+    from core.config import settings
+    background_tasks.add_task(
+        _generate_scraper_background,
+        scraper_id=scraper_id,
+        user_id=current_user.id,
+        db_url=settings.DATABASE_URL
+    )
 
-        # Generate scraper code
-        logger.info("Calling Secondary Agent generate_scraper()...")
-        result = await agent.generate_scraper(
-            user_id=str(current_user.id),
-            scraper_id=str(scraper_id),
-            target_url=scraper.target_url,
-            data_fields=data_fields,
-            special_requirements=special_requirements
-        )
-
-        logger.info(f"[SCRAPER GENERATION] Agent returned: success={result.get('success')}")
-
-        # Update scraper configuration with generated code
-        if result.get("success") and result.get("scraper_code"):
-            logger.info("[UPDATE DATABASE] Generation successful, saving code to database")
-            logger.info(f"  Code Length: {len(result['scraper_code'])} characters")
-            logger.info(f"  Test Results: {result.get('test_results', {}).get('success', 'N/A')}")
-            logger.info(f"  Iterations: {result.get('iterations', 0)}")
-            logger.info(f"  Tool Calls: {len(result.get('tool_calls', []))}")
-
-            scraper.scraping_config = {
-                **config,
-                "generated_code": result["scraper_code"],
-                "test_results": result.get("test_results"),
-                "analysis": result.get("analysis"),
-                "reasoning_log": result.get("reasoning_log", []),  # Save reasoning steps
-                "generation_completed_at": datetime.utcnow().isoformat(),
-                "tool_calls": result.get("tool_calls", []),
-                "iterations": result.get("iterations", 0),
-                "final_message": result.get("final_message", "")
-            }
-            scraper.status = "active"
-            logger.info("[UPDATE DATABASE] Scraper status set to 'active'")
-        else:
-            logger.warning("[UPDATE DATABASE] Generation failed, saving error to database")
-            logger.warning(f"  Error Message: {result.get('message', 'Unknown error')}")
-            logger.warning(f"  Iterations: {result.get('iterations', 0)}")
-            logger.warning(f"  Tool Calls: {len(result.get('tool_calls', []))}")
-
-            scraper.scraping_config = {
-                **config,
-                "error": result.get("message", "Generation failed"),
-                "reasoning_log": result.get("reasoning_log", []),  # Save reasoning even on failure
-                "generation_failed_at": datetime.utcnow().isoformat(),
-                "tool_calls": result.get("tool_calls", [])
-            }
-            scraper.status = "failed"
-            logger.warning("[UPDATE DATABASE] Scraper status set to 'failed'")
-
-        await db.commit()
-        await db.refresh(scraper)
-
-        logger.info("[SCRAPER GENERATION ENDPOINT] Completed")
-        logger.info("="*80)
-
-        return {
-            "scraper_id": str(scraper_id),
-            "status": scraper.status,
-            "message": "Code generation completed" if result.get("success") else "Code generation failed",
-            "result": result
-        }
-
-    except Exception as e:
-        # Update status to failed
-        logger.error("="*80)
-        logger.error("[SCRAPER GENERATION ENDPOINT] Exception Occurred")
-        logger.error(f"Error Type: {type(e).__name__}")
-        logger.error(f"Error Message: {str(e)}")
-        logger.error(f"Full Traceback:\n{traceback.format_exc()}")
-        logger.error("="*80)
-
-        scraper.status = "failed"
-        scraper.scraping_config = {
-            **config,
-            "error": str(e),
-            "error_type": type(e).__name__,
-            "traceback": traceback.format_exc(),
-            "generation_failed_at": datetime.utcnow().isoformat()
-        }
-        await db.commit()
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate scraper code: {str(e)}"
-        )
+    return {
+        "scraper_id": str(scraper_id),
+        "status": "generating",
+        "message": "Code generation started — poll scraper status for completion"
+    }

@@ -1,0 +1,353 @@
+{
+ "allbirds/detail": {
+  "h1": [
+   "Men's Dasher NZ",
+   "Men's Dasher NZ"
+  ],
+  "l0_name": "Men's Dasher NZ",
+  "l0_price": 140,
+  "visible_prices": [
+   "$100",
+   "$5.00",
+   "$140",
+   "$27",
+   "$55",
+   "$135"
+  ],
+  "l0_sku": "MENS_DASHER_NZ",
+  "l0_image": "Z-Natural-Black-Blizzard_PDP_LEFT.png?v=1769622500&width=100"
+ },
+ "allbirds/listing": {
+  "n_product_hrefs": 0,
+  "sample_names": [
+   "Runner NZ",
+   "Tree Runner NZ",
+   "Canvas Cruiser",
+   "Varsity Cruiser"
+  ],
+  "visible_prices": [
+   "$100",
+   "$5.00",
+   "$75",
+   "$76",
+   "$101",
+   "$125",
+   "$126",
+   "$150"
+  ]
+ },
+ "barefootbuttons/detail": {
+  "h1": [
+   "Barefoot Buttons V1 Standard Clear Acrylic- Guitar Pedal Foo"
+  ],
+  "l0_name": "Barefoot Buttons V1 Standard Clear Acrylic- Guitar Pedal Footswitch Topper",
+  "l0_price": null,
+  "visible_prices": [
+   "$35",
+   "$ 0.00",
+   "$ 9.95",
+   "$ 10.95",
+   "$ 7.95",
+   "$ 8.95"
+  ],
+  "l0_sku": "17-V1-ST-CR",
+  "l0_image": "/05/barefoot-buttons-v1-standard-clear-footswitch-topper.png"
+ },
+ "barefootbuttons/listing": {
+  "n_product_hrefs": 61,
+  "sample_names": [
+   "Barefoot Buttons V1 Standard Silver- Guitar Pedal Footswitch Topper",
+   "Read more",
+   "Barefoot Buttons V1 Standard Black- Guitar Pedal Footswitch Topper",
+   "Barefoot Buttons V1 Standard Red- Guitar Pedal Footswitch Topper"
+  ],
+  "visible_prices": [
+   "$35",
+   "$ 0.00",
+   "$ 9.95",
+   "$ 10.95",
+   "$ 7.95",
+   "$ 8.95",
+   "$ 1.95"
+  ]
+ },
+ "beardbrand/detail": {
+  "h1": [
+   "Custom Men’s Cologne Set"
+  ],
+  "l0_name": "Custom Men’s Cologne Set",
+  "l0_price": 140.0,
+  "visible_prices": [
+   "$0.00",
+   "$7.99",
+   "$15.99",
+   "$75",
+   "$5",
+   "$15"
+  ],
+  "l0_sku": null,
+  "l0_image": "brand.com/cdn/shop/files/edps_8_brown_1024x.jpg?v=1774905624"
+ },
+ "beardbrand/listing": {
+  "n_product_hrefs": 48,
+  "sample_names": [
+   "30% Off  Cologne Sets",
+   "Utility Beard Trimmer",
+   "Book of Reminders",
+   "Alliance Membership"
+  ],
+  "visible_prices": [
+   "$32",
+   "$29",
+   "$39",
+   "$36",
+   "$25",
+   "$22",
+   "$19",
+   "$45"
+  ]
+ },
+ "bigcommerce-demo/detail": {
+  "h1": [
+   "Shop All"
+  ],
+  "l0_name": null,
+  "l0_price": null,
+  "visible_prices": [
+   "$25.00",
+   "$30.00",
+   "$27.95",
+   "$23.00",
+   "$22.00",
+   "$18.95"
+  ],
+  "l0_sku": null,
+  "l0_image": ""
+ },
+ "bigcommerce-demo/listing": {
+  "n_product_hrefs": 0,
+  "sample_names": [],
+  "visible_prices": [
+   "$25.00",
+   "$30.00",
+   "$27.95",
+   "$23.00",
+   "$22.00",
+   "$18.95",
+   "$35.00",
+   "$31.95"
+  ]
+ },
+ "bombas/detail": {
+  "h1": [
+   "Men's Solids Ankle Sock 4-Pack"
+  ],
+  "l0_name": "Men's Solids Ankle Sock 4-Pack",
+  "l0_price": "3100.0",
+  "visible_prices": [],
+  "l0_sku": "A-E-A-101A01-MSOL-04P-SGBRS-L",
+  "l0_image": "e2f0/11171-stormsagemix-adult-male-layflat-1-transparent.png"
+ },
+ "bombas/listing": {
+  "n_product_hrefs": 13,
+  "sample_names": [
+   "Week of Bombas Ankle Sock MKD 900 Save 10% on 4+ Men · Midweight",
+   "Run Ankle Socks MKD 1,200 Save 10% on 4+ Men · Lightweight",
+   "Gift Cards",
+   "New: Sport Flyless Boxer Brief"
+  ],
+  "visible_prices": []
+ },
+ "books-toscrape/detail": {
+  "h1": [
+   "Soumission"
+  ],
+  "l0_name": null,
+  "l0_price": null,
+  "visible_prices": [
+   "£50.10",
+   "£0.00",
+   "£53.74",
+   "£51.77"
+  ],
+  "l0_sku": null,
+  "l0_image": ""
+ },
+ "books-toscrape/listing": {
+  "n_product_hrefs": 0,
+  "sample_names": [],
+  "visible_prices": [
+   "£50.10",
+   "£47.61",
+   "£50.27",
+   "£17.27",
+   "£54.11",
+   "£21.04",
+   "£42.15",
+   "£51.36"
+  ]
+ },
+ "gymshark/detail": {
+  "h1": [
+   "Arrival 5\" Shorts"
+  ],
+  "l0_name": "Arrival 5&quot; Shorts",
+  "l0_price": null,
+  "visible_prices": [
+   "$75",
+   "$10",
+   "$26",
+   "$35",
+   "$5",
+   "$15"
+  ],
+  "l0_sku": null,
+  "l0_image": "s-Arrival5ShortsBlackA2A1M_BBBB_1826_A_Edit.jpg?v=1750084637"
+ },
+ "gymshark/listing": {
+  "n_product_hrefs": 63,
+  "sample_names": [
+   "Crest Oversized Joggers",
+   "Silicone Lifting Straps",
+   "Arrival 5\" Shorts",
+   "Train 5\" Shorts"
+  ],
+  "visible_prices": [
+   "$75",
+   "$10",
+   "$0",
+   "$20",
+   "$30",
+   "$50",
+   "$100",
+   "$125"
+  ]
+ },
+ "hyva-magento/detail": {
+  "h1": [
+   "Dining"
+  ],
+  "l0_name": null,
+  "l0_price": null,
+  "visible_prices": [
+   "€0.00",
+   "€999.99",
+   "€1,00",
+   "€1,99",
+   "€2,00",
+   "€10.00"
+  ],
+  "l0_sku": null,
+  "l0_image": ""
+ },
+ "hyva-magento/listing": {
+  "n_product_hrefs": 0,
+  "sample_names": [],
+  "visible_prices": [
+   "€0.00",
+   "€99.99",
+   "€100.00",
+   "€199.99",
+   "€200.00",
+   "€55.00",
+   "€75.00",
+   "€120.00"
+  ]
+ },
+ "rothys/detail": {
+  "h1": [
+   "The Virtual Gift Card"
+  ],
+  "l0_name": "The Virtual Gift Card",
+  "l0_price": null,
+  "visible_prices": [
+   "$50",
+   "$75",
+   "$100",
+   "$125",
+   "$150",
+   "$200"
+  ],
+  "l0_sku": null,
+  "l0_image": ""
+ },
+ "rothys/listing": {
+  "n_product_hrefs": 3,
+  "sample_names": [
+   "The Point II",
+   "The Bow Point II",
+   "Gift Cards"
+  ],
+  "visible_prices": [
+   "$20",
+   "$ 2026"
+  ]
+ },
+ "vercel-commerce/detail": {
+  "h1": [
+   "Acme Cowboy Hat"
+  ],
+  "l0_name": "Acme Cowboy Hat",
+  "l0_price": "160.0",
+  "visible_prices": [
+   "$20.00",
+   "$10.00",
+   "$50.00",
+   "$15.00",
+   "$45.00",
+   "$25.00"
+  ],
+  "l0_sku": null,
+  "l0_image": "s/1/0754/3727/7491/files/cowboy-hat-black-1.png?v=1690208765"
+ },
+ "vercel-commerce/listing": {
+  "n_product_hrefs": 18,
+  "sample_names": [
+   "Acme Cowboy Hat $160.00 USD",
+   "Acme Sticker $4.00 USD",
+   "Acme Mug $15.00 USD",
+   "Acme Circles T-Shirt $20.00 USD"
+  ],
+  "visible_prices": [
+   "$160.00",
+   "$4.00",
+   "$15.00",
+   "$20.00",
+   "$25.00",
+   "$150.00",
+   "$50.00",
+   "$45.00"
+  ]
+ },
+ "webscraper-io/detail": {
+  "h1": [
+   "Test Sites"
+  ],
+  "l0_name": "Asus VivoBook X441NA-GA190",
+  "l0_price": "$295.99",
+  "visible_prices": [
+   "$295.99"
+  ],
+  "l0_sku": null,
+  "l0_image": "//webscraper.io/images/test-sites/e-commerce/items/cart2.png"
+ },
+ "webscraper-io/listing": {
+  "n_product_hrefs": 48,
+  "sample_names": [
+   "Asus VivoBook...",
+   "Prestigio Smar...",
+   "Aspire E1-510",
+   "Lenovo V110-15..."
+  ],
+  "visible_prices": [
+   "$295.99",
+   "$299",
+   "$306.99",
+   "$321.94",
+   "$356.49",
+   "$364.46",
+   "$372",
+   "$379.94"
+  ]
+ }
+}

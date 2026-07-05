@@ -46,6 +46,10 @@ class Settings(BaseSettings):
     # OpenRouter API
     OPENROUTER_API_KEY: str
 
+    # LLM models (OpenRouter model IDs) — override per environment for benchmarking
+    PRIMARY_AGENT_MODEL: str = "deepseek/deepseek-v3.2-exp"
+    SECONDARY_AGENT_MODEL: str = "deepseek/deepseek-v3.1-terminus"
+
     # JWT
     JWT_SECRET_KEY: str = "default"
     JWT_ALGORITHM: str = "HS256"

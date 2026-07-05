@@ -89,7 +89,7 @@ class SecondaryAgent:
     def __init__(self):
         self.api_key = settings.OPENROUTER_API_KEY
         self.api_base = "https://openrouter.ai/api/v1"
-        self.model = "deepseek/deepseek-v3.1-terminus"  # Default model
+        self.model = settings.SECONDARY_AGENT_MODEL
         self.tools_manager = MCPToolsManager()
 
         # Initialize tiktoken encoder for token counting
@@ -124,11 +124,26 @@ IMPORTANT: Follow this exact order to satisfy tool dependencies:
    - Browser session is automatically created on first call
    - Use bypass_cloudflare=true if Cloudflare is detected
 
-2. **Get HTML source (with automatic boilerplate removal)**
+2. **Get the reduced page view + structured data**
    - Call: `browser_get_page_source()`
-   - HTML is automatically cleaned (scripts, nav, footer, ads removed)
-   - This reduces token usage by 40-60%
-   - Cleaned HTML is cached for DOM analysis tools
+   - Returns `structured_data`: cross-checked product fields from JSON-LD/microdata.
+     If it covers the fields you need, PREFER it — write extraction based on the
+     structured data (it is what the site itself renders from) and only use HTML
+     selectors for fields it lacks.
+   - Returns `fragment`: on listing pages, ONE exemplar product card + `listing`
+     metadata (container_css, record_css, record_count) — write field selectors
+     RELATIVE to the card; the runner loops over all cards. On detail pages,
+     anchored DOM slices around title/price/image/etc.; `anchors_found` tells you
+     which fields were NOT located (absent pre-render or need a wider view).
+   - Fragments/candidates may be labeled UNCONFIRMED: automatic checks found the
+     structure but could not confirm product signals (e.g. unusual currency,
+     lazy-loaded images). YOU inspect the exemplar and decide — the heuristics
+     only rank candidates, they never overrule your judgment. If the candidate is
+     wrong, explore with browser_get_page_source(full=true) and the DOM tools.
+   - The full page stays cached for DOM analysis tools — selector validation runs
+     against the full page, not the fragment.
+   - Escalation: if the fragment is missing a node you need, call
+     `browser_get_page_source(full=true)` for the full reduced page.
    - PREREQUISITE: Must call browser_navigate first
 
 3. **Analyze page structure FIRST (CRITICAL - DO THIS BEFORE SELECTOR GENERATION)**
@@ -690,7 +705,12 @@ Follow the recommended workflow in your instructions."""
                         continue
                     else:
                         # No tool calls, check if we can actually complete
-                        final_message = assistant_message.get("content", "")
+                        # DeepSeek via OpenRouter sometimes returns content: null
+                        # with the real text in `reasoning` — .get(key, "") does
+                        # NOT protect against an explicit null
+                        final_message = (assistant_message.get("content")
+                                         or assistant_message.get("reasoning")
+                                         or "")
 
                         # CRITICAL VALIDATION: Don't end without scraper code
                         if not scraper_code:

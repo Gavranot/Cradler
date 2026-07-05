@@ -1,0 +1,8 @@
+{
+  "url": "https://webscraper.io/test-sites/e-commerce/allinone/computers/laptops",
+  "fetched_at": "2026-07-03T14:42:17.326911+00:00",
+  "bytes": 216611,
+  "dom_nodes_after_scroll": 2255,
+  "hydration_sizes": {},
+  "renderer": "botasaurus"
+}

@@ -1,0 +1,10 @@
+{
+  "url": "https://www.gymshark.com/collections/all-products/mens",
+  "fetched_at": "2026-07-03T14:39:55.784157+00:00",
+  "bytes": 3382808,
+  "dom_nodes_after_scroll": 4306,
+  "hydration_sizes": {
+    "__NEXT_DATA__": 2367199
+  },
+  "renderer": "botasaurus"
+}

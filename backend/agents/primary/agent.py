@@ -24,7 +24,7 @@ class PrimaryAgent:
     def __init__(self):
         self.api_key = settings.OPENROUTER_API_KEY
         self.api_base = "https://openrouter.ai/api/v1"
-        self.model = "deepseek/deepseek-v3.2-exp"  # Default model
+        self.model = settings.PRIMARY_AGENT_MODEL
 
         # System prompt for the Primary Agent
         self.system_prompt = """You are Cradler's AI assistant, specialized in helping users create custom web scrapers through conversation.

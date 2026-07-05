@@ -7,10 +7,26 @@ Handles browser lifecycle, navigation, and provides environment for other tools.
 from typing import Optional, Dict, Any
 from botasaurus_driver import Driver
 import asyncio
+import os
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _container_driver_kwargs() -> Dict[str, Any]:
+    """Extra Driver kwargs needed to launch Chrome inside Docker.
+
+    Docker's default 64MB /dev/shm crashes Chrome without --disable-dev-shm-usage.
+    (botasaurus-driver 4.0.7 already forces --no-sandbox when it detects Docker and
+    discovers `chromium` on PATH by itself; it has no browser_executable_path kwarg.)
+    """
+    kwargs: Dict[str, Any] = {}
+    if os.path.exists("/.dockerenv"):
+        kwargs["arguments"] = ["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"]
+    return kwargs
 
 
 class BrowserControlTool:
@@ -23,6 +39,19 @@ class BrowserControlTool:
     def __init__(self):
         self.active_sessions: Dict[str, Driver] = {}
         self.session_metadata: Dict[str, Dict[str, Any]] = {}
+        # botasaurus Driver drives Chrome through its OWN asyncio loop via
+        # run_until_complete — illegal on the thread already running uvicorn's
+        # loop ("Cannot run the event loop while another loop is running").
+        # ALL driver work is therefore confined to this single worker thread;
+        # max_workers=1 also gives the driver's loop thread affinity.
+        self._driver_thread = ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix="botasaurus")
+
+    async def _in_driver_thread(self, fn, *args, **kwargs):
+        """Run a sync driver operation on the dedicated botasaurus thread."""
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(
+            self._driver_thread, partial(fn, *args, **kwargs))
 
     async def create_session(
         self,
@@ -55,13 +84,16 @@ class BrowserControlTool:
             logger.info(f"[BROWSER] Creating session: {session_id}")
             logger.info(f"[BROWSER] Config: headless={headless}, block_images={block_images}")
 
-            # Create Botasaurus Driver instance with correct API
-            driver = Driver(
+            # Create Botasaurus Driver instance with correct API — on the
+            # dedicated driver thread (see __init__)
+            driver = await self._in_driver_thread(
+                Driver,
                 headless=headless,
                 user_agent=user_agent,  # Can be None or string
                 proxy=proxy,
                 block_images=block_images,
                 beep=False,  # Disable beep on completion
+                **_container_driver_kwargs(),
             )
 
             self.active_sessions[session_id] = driver
@@ -118,23 +150,27 @@ class BrowserControlTool:
             driver = self.active_sessions[session_id]
             logger.info(f"[BROWSER] Navigating to: {url}")
 
-            if bypass_cloudflare:
-                logger.info(f"[BROWSER] Using Cloudflare bypass")
-                driver.google_get(url, bypass_cloudflare=True)
-            else:
-                driver.get(url)
+            def _navigate():
+                if bypass_cloudflare:
+                    logger.info(f"[BROWSER] Using Cloudflare bypass")
+                    driver.google_get(url, bypass_cloudflare=True)
+                else:
+                    driver.get(url)
+                # Brief sleep to ensure page starts loading
+                if wait_for_load:
+                    driver.short_random_sleep()
+                # current_url/title are properties backed by run_js — must also
+                # execute on the driver thread
+                return driver.current_url, driver.title
 
-            # Brief sleep to ensure page starts loading
-            if wait_for_load:
-                driver.short_random_sleep()
-
-            logger.info(f"[BROWSER] Navigation complete: {driver.current_url}")
+            current_url, title = await self._in_driver_thread(_navigate)
+            logger.info(f"[BROWSER] Navigation complete: {current_url}")
 
             return {
                 "success": True,
                 "session_id": session_id,
-                "url": driver.current_url,
-                "title": driver.title,
+                "url": current_url,
+                "title": title,
                 "message": "Navigation successful"
             }
 
@@ -170,7 +206,7 @@ class BrowserControlTool:
             driver = self.active_sessions[session_id]
 
             # Save screenshot (Botasaurus saves to output/ by default)
-            driver.save_screenshot()
+            await self._in_driver_thread(driver.save_screenshot)
 
             default_path = f"output/screenshot_{session_id}_{int(datetime.utcnow().timestamp())}.png"
 
@@ -211,16 +247,19 @@ class BrowserControlTool:
 
         try:
             driver = self.active_sessions[session_id]
-            html = driver.page_html
 
+            def _read_page():
+                return driver.page_html, driver.current_url, driver.title
+
+            html, current_url, title = await self._in_driver_thread(_read_page)
             logger.info(f"[BROWSER] Retrieved page source: {len(html)} characters")
 
             return {
                 "success": True,
                 "session_id": session_id,
                 "html": html,
-                "url": driver.current_url,
-                "title": driver.title,
+                "url": current_url,
+                "title": title,
                 "message": "Page source retrieved"
             }
 
@@ -254,7 +293,7 @@ class BrowserControlTool:
 
         try:
             driver = self.active_sessions[session_id]
-            result = driver.run_js(script)
+            result = await self._in_driver_thread(driver.run_js, script)
 
             logger.info(f"[BROWSER] JavaScript executed successfully")
 
@@ -293,7 +332,7 @@ class BrowserControlTool:
 
         try:
             driver = self.active_sessions[session_id]
-            driver.close()
+            await self._in_driver_thread(driver.close)
 
             # Cleanup
             del self.active_sessions[session_id]
@@ -339,7 +378,7 @@ class BrowserControlTool:
             driver = self.active_sessions[session_id]
 
             # Check for common bot detection indicators
-            is_detected = driver.is_bot_detected()
+            is_detected = await self._in_driver_thread(driver.is_bot_detected)
 
             logger.info(f"[BROWSER] Bot detection check: {is_detected}")
 
