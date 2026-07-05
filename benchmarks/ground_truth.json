@@ -14,7 +14,7 @@
   },
   "beardbrand/detail": {
     "title": "Custom Men’s Cologne Set",
-    "price": ["140"],
+    "price": {"value": "140", "visible": false, "note": "configurable cologne set: $140 lives only in JSON-LD/analytics blobs, no rendered DOM price text (relabeled 2026-07-05, was plain ['140'])"},
     "image_hint": "cdn/shop"
   },
   "bigcommerce-demo/detail": {

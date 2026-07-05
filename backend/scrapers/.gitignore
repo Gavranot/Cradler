@@ -1,0 +1,8 @@
+# Per-user generated scraper workspaces ({user_id}/{scraper_id}/ UUID dirs):
+# agent-written scripts, Botasaurus profiles/error_logs, scraped output.
+# Runtime data — never commit. The code packages that live alongside them
+# are re-included explicitly.
+/*/
+!/executor/
+!/templates/
+!/validators/

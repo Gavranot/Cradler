@@ -3,6 +3,7 @@ Scraper Executor Service
 
 Executes generated Botasaurus scraping scripts and handles output storage.
 """
+import asyncio
 import subprocess
 import json
 import logging
@@ -197,6 +198,88 @@ class ScraperExecutor:
             logger.debug(f"[EXECUTOR] Stdout preview: {stdout[:500]}")
             return None
 
+    async def test_scraper(
+        self,
+        user_id: UUID,
+        scraper_id: UUID,
+        sample_size: int = 5
+    ) -> Dict[str, Any]:
+        """
+        Execute a scraper once WITHOUT persisting results
+
+        Same subprocess execution as execute_scraper, but no ScrapingRun record
+        and no MinIO upload — returns up to sample_size records inline so the
+        caller can eyeball output quality.
+
+        Returns:
+            Dict matching ScraperTestResponse: success, records_scraped,
+            sample_data, errors, execution_time
+        """
+        logger.info(f"[EXECUTOR] Test run for scraper {scraper_id} (user {user_id})")
+
+        script_path = self._get_scraper_path(str(user_id), str(scraper_id))
+
+        if not self._validate_scraper_exists(script_path):
+            return {
+                "success": False,
+                "records_scraped": 0,
+                "sample_data": [],
+                "errors": [f"Scraper script not found: {script_path}"],
+                "execution_time": 0.0
+            }
+
+        try:
+            returncode, stdout, stderr, execution_time = await asyncio.to_thread(
+                self._execute_script, script_path)
+        except subprocess.TimeoutExpired:
+            return {
+                "success": False,
+                "records_scraped": 0,
+                "sample_data": [],
+                "errors": [f"Execution timeout after {self.timeout} seconds"],
+                "execution_time": float(self.timeout)
+            }
+        except Exception as e:
+            logger.error(f"[EXECUTOR] Test run failed: {e}")
+            logger.error(traceback.format_exc())
+            return {
+                "success": False,
+                "records_scraped": 0,
+                "sample_data": [],
+                "errors": [f"Execution failed: {str(e)}"],
+                "execution_time": 0.0
+            }
+
+        if returncode != 0:
+            errors = [f"Scraper exited with code {returncode}"]
+            if stderr:
+                errors.append(stderr[:500])
+            return {
+                "success": False,
+                "records_scraped": 0,
+                "sample_data": [],
+                "errors": errors,
+                "execution_time": execution_time
+            }
+
+        data = self._parse_json_output(stdout)
+        if data is None:
+            return {
+                "success": False,
+                "records_scraped": 0,
+                "sample_data": [],
+                "errors": ["Failed to parse JSON output from scraper"],
+                "execution_time": execution_time
+            }
+
+        return {
+            "success": True,
+            "records_scraped": len(data),
+            "sample_data": data[:sample_size],
+            "errors": [],
+            "execution_time": execution_time
+        }
+
     async def execute_scraper(
         self,
         user_id: UUID,
@@ -233,9 +316,12 @@ class ScraperExecutor:
                 error_message=f"Scraper script not found: {script_path}"
             )
 
-        # Execute script
+        # Execute script off the event loop — subprocess.run blocks for up to
+        # self.timeout, and this coroutine runs on uvicorn's loop via
+        # BackgroundTasks; calling it inline froze the whole API during a run.
         try:
-            returncode, stdout, stderr, execution_time = self._execute_script(script_path)
+            returncode, stdout, stderr, execution_time = await asyncio.to_thread(
+                self._execute_script, script_path)
 
             logger.debug(f"[EXECUTOR] Stdout length: {len(stdout)} chars")
             logger.debug(f"[EXECUTOR] Stderr length: {len(stderr)} chars")

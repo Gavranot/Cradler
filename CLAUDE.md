@@ -203,7 +203,8 @@ frontend/
 7. Iterate on agent intelligence
 8. Self-healing maintenance ❌
 
-**Current Focus:** Scraper Executor implementation
+**Current Focus:** bug-fix backlog → spec split (generic runner + declarative
+ExtractionSpec) + Maintenance Agent v1 — see `HANDOFF.md` at repo root
 
 ---
 
@@ -333,8 +334,11 @@ duplicated here (which previously caused drift). See:
   tool-call parsing, Context7 transport quirks, bcrypt warning, etc.).
 
 **One-line summary:** the core MVP loop works end to end — chat → generate → test →
-execute → store. The Scraper Executor *is* implemented; Temporal scheduling, the
-Maintenance Agent, and the data-export/admin APIs are not yet wired.
+execute → store — E2E-verified on a real site (2026-07-05). The **Reduction
+Pipeline** (`backend/agents/mcp/reduction/`) now feeds the authoring LLM ~1K-token
+fragments instead of full pages (design: `OPTIMIZED_DESIGN.md`; numbers:
+`BENCHMARKS.md`; next steps: `HANDOFF.md`). Temporal scheduling, the Maintenance
+Agent, and the data-export/admin APIs are not yet wired.
 
 ---
 

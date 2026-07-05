@@ -1,0 +1,10 @@
+# Botasaurus runtime state — the in-process browser (BrowserControlTool) and
+# scraper test runs write these into the process cwd (the backend root in
+# the container).
+error_logs/
+profiles/
+profiles.json
+local_storage.json
+tasks/
+build/
+output/

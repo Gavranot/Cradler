@@ -11,6 +11,7 @@ Workflow:
 
 Uses ReAct (Reasoning + Acting) with MCP tools for autonomous operation.
 """
+import asyncio
 import httpx
 import json
 import uuid
@@ -405,6 +406,68 @@ When you complete all phases, provide a summary of:
 
         return token_count
 
+    MAX_LLM_ATTEMPTS = 3
+
+    async def _chat_completion(
+        self,
+        client: httpx.AsyncClient,
+        request_payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        POST to OpenRouter and return the assistant message, retrying
+        transport-level garbage.
+
+        DeepSeek via OpenRouter intermittently returns an empty message
+        (content: null/"", no tool_calls, no reasoning) or an error body
+        without "choices". Those are transport artifacts, not model answers —
+        without a retry a single glitch fails an entire generation run
+        (KNOWN_ISSUES #10 / FINDINGS F18).
+        """
+        last_error = "unknown"
+        for attempt in range(1, self.MAX_LLM_ATTEMPTS + 1):
+            try:
+                response = await client.post(
+                    f"{self.api_base}/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://cradler.ai",
+                        "X-Title": "Cradler Secondary Agent"
+                    },
+                    json=request_payload
+                )
+                response.raise_for_status()
+                data = response.json()
+            except httpx.HTTPStatusError as e:
+                status_code = e.response.status_code
+                logger.error(f"OpenRouter HTTP {status_code}: {e.response.text[:500]}")
+                retryable = status_code in (408, 429, 500, 502, 503, 504)
+                if not retryable or attempt == self.MAX_LLM_ATTEMPTS:
+                    raise
+                last_error = f"HTTP {status_code}"
+            except (httpx.TimeoutException, httpx.TransportError) as e:
+                logger.error(f"OpenRouter request failed: {e}")
+                if attempt == self.MAX_LLM_ATTEMPTS:
+                    raise
+                last_error = f"{type(e).__name__}: {e}"
+            else:
+                if data.get("choices"):
+                    message = data["choices"][0]["message"]
+                    if (message.get("tool_calls")
+                            or (message.get("content") or "").strip()
+                            or (message.get("reasoning") or "").strip()):
+                        return message
+                    last_error = "empty message (no content/reasoning/tool_calls)"
+                else:
+                    # OpenRouter can return HTTP 200 with an error body
+                    last_error = f"no choices in response: {str(data)[:300]}"
+                logger.warning(
+                    f"[LLM RETRY {attempt}/{self.MAX_LLM_ATTEMPTS}] {last_error}")
+            await asyncio.sleep(3 * attempt)
+        raise RuntimeError(
+            f"OpenRouter returned no usable reply after "
+            f"{self.MAX_LLM_ATTEMPTS} attempts: {last_error}")
+
     def _parse_deepseek_tool_calls(self, reasoning_text: str) -> List[Dict[str, Any]]:
         """
         Parse DeepSeek's custom tool calling format from reasoning field
@@ -559,35 +622,8 @@ Follow the recommended workflow in your instructions."""
                     logger.debug(f"  Tools Available: {len(self.tools_manager.get_tool_definitions())}")
                     logger.info(f"  Total Input Tokens: {total_tokens:,}")
 
-                    try:
-                        response = await client.post(
-                            f"{self.api_base}/chat/completions",
-                            headers={
-                                "Authorization": f"Bearer {self.api_key}",
-                                "Content-Type": "application/json",
-                                "HTTP-Referer": "https://cradler.ai",
-                                "X-Title": "Cradler Secondary Agent"
-                            },
-                            json=request_payload
-                        )
-
-                        response.raise_for_status()
-                        data = response.json()
-
-                        logger.debug(f"OpenRouter Response Status: {response.status_code}")
-                        logger.debug(f"Response Keys: {list(data.keys())}")
-                    except httpx.HTTPStatusError as e:
-                        logger.error(f"OpenRouter HTTP Error: {e.response.status_code}")
-                        logger.error(f"Response Body: {e.response.text}")
-                        raise
-                    except Exception as e:
-                        logger.error(f"OpenRouter Request Failed: {str(e)}")
-                        raise
-                    
-                    if "choices" in data:
-                        assistant_message = data["choices"][0]["message"]
-                    else:
-                        logger.debug(f"[FULL_DATA] Full data: {data}")
+                    assistant_message = await self._chat_completion(
+                        client, request_payload)
 
                     logger.debug(f"[ASSISTANT_MESSAGE_FULL] Full assistant message: {assistant_message}")
 

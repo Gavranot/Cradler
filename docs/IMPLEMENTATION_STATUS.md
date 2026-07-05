@@ -26,7 +26,7 @@ the executor runs it and stores results in object storage.
 ### API
 - **Scrapers** (`backend/api/scrapers/`) — full CRUD plus `POST /{id}/generate`
   (runs Secondary Agent), `POST /{id}/run` (background execution), `POST /{id}/test`
-  (mock data for now), `GET /{id}/runs`, `GET /{id}/runs/{run_id}`.
+  (real one-off execution, nothing persisted), `GET /{id}/runs`, `GET /{id}/runs/{run_id}`.
 - **Chat** (`backend/api/chat/`) — session create/list/get/delete and
   `POST /sessions/{id}/messages` wired to the Primary Agent.
 
@@ -67,7 +67,6 @@ Axios service layer (120s timeout, JWT interceptor, 401→login redirect).
 
 - **Primary Agent** — works for the create-scraper flow; advanced intent
   classification and strict robots.txt enforcement are basic.
-- **`POST /scrapers/{id}/test`** — returns mock data rather than a real dry run.
 - **Dashboard view** — placeholder; the functional surfaces are Chat, Scrapers,
   and ScraperDetail.
 
@@ -99,3 +98,39 @@ Agent generation against `books.toscrape.com`, reasoning capture, generated-code
 persistence, and execution → MinIO storage. There is no automated test suite yet;
 adding unit/integration coverage for the agents and API is the main testing debt.
 See [TESTING_GUIDE.md](./TESTING_GUIDE.md) for manual API/UI walkthroughs.
+
+## Update 2026-07-05 — Reduction Pipeline integrated; full loop E2E-verified
+
+- **Reduction Pipeline** (`backend/agents/mcp/reduction/`) — ✅ built, integrated,
+  and verified end-to-end on a real site (anhoch.com: listing collapsed
+  253,144 chars → 504-token fragment; agent authored from the mined selectors).
+  The authoring LLM now sees ~1K-token routed fragments + cross-checked
+  structured data instead of full pages (102× vs raw on the 22-page benchmark
+  corpus, 0 reduction-caused failures). Design/benchmarks/trail:
+  `OPTIMIZED_DESIGN.md`, `BENCHMARKS.md`, `FINDINGS.md` at repo root.
+- `/generate` is now genuinely asynchronous (BackgroundTasks + status polling);
+  final code is persisted to the executor contract path `scraper.py`.
+- Stability fixes: websockets<14 pin (botasaurus 4.0.7), all Driver work on a
+  dedicated thread, Context7 SSE parsing, DeepSeek `content:null` guard —
+  details in `KNOWN_ISSUES.md` #7–#12.
+- Agent models are env-configurable: `PRIMARY_AGENT_MODEL`,
+  `SECONDARY_AGENT_MODEL` (+ `BENCH_LLM_*` for the benchmark suite).
+- **Next planned work:** bug-fix backlog, then the spec split (generic runner +
+  declarative ExtractionSpec) and Maintenance Agent v1 — see `HANDOFF.md`.
+
+## Update 2026-07-05 (later) — bug-fix round
+
+- `POST /scrapers/{id}/test` now really executes the scraper
+  (`scraper_executor.test_scraper`: same subprocess as `/run`, but no
+  ScrapingRun record / MinIO upload; returns up to `sample_size` records
+  inline). Mock data removed.
+- Executor subprocess calls moved off the event loop (`asyncio.to_thread`) —
+  a running scrape used to block the entire API for its duration.
+- Secondary Agent OpenRouter calls retry transient failures (empty messages,
+  429/5xx, `choices`-less bodies): 3 attempts, linear backoff
+  (`_chat_completion` in `agents/secondary/agent.py`).
+- Successful generation now deletes the agent's other `*.py` drafts in
+  `scrapers/{user_id}/{scraper_id}/` — only `scraper.py` is canonical.
+- Benchmark ground truth: `beardbrand/detail` price relabeled
+  `visible: false` (only in JSON-LD/analytics blobs). Regression suite:
+  0 reduction-caused FAILs, 22/22 classifier, median 975 tokens.

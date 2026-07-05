@@ -216,8 +216,12 @@ async def test_scraper(
     """
     Test scraper execution
 
-    For MVP, this returns mock data.
-    In production, this would execute the scraper in test mode.
+    Runs the generated scraper.py once in a subprocess (same path as /run)
+    but persists nothing — no ScrapingRun record, no MinIO upload — and
+    returns up to sample_size records inline.
+
+    Synchronous: the response arrives when the scrape finishes, which can
+    take minutes on slow sites (bounded by MAX_SCRAPER_EXECUTION_TIME).
     """
     result = await db.execute(
         select(Scraper).where(
@@ -233,22 +237,20 @@ async def test_scraper(
             detail="Scraper not found"
         )
 
-    # Mock response for MVP
-    # In production, this would run the actual scraper
-    return ScraperTestResponse(
-        success=True,
-        records_scraped=test_request.sample_size,
-        sample_data=[
-            {
-                "title": f"Sample Product {i}",
-                "price": 29.99 + i,
-                "url": f"{scraper.target_url}/product-{i}"
-            }
-            for i in range(test_request.sample_size)
-        ],
-        errors=[],
-        execution_time=2.5
+    config = scraper.scraping_config or {}
+    if not config.get("generated_code"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Scraper code not yet generated. Please generate code first."
+        )
+
+    test_result = await scraper_executor.test_scraper(
+        user_id=current_user.id,
+        scraper_id=scraper_id,
+        sample_size=test_request.sample_size
     )
+
+    return ScraperTestResponse(**test_result)
 
 
 async def _execute_scraper_background(
@@ -570,6 +572,18 @@ async def _generate_scraper_background(scraper_id: UUID, user_id: UUID, db_url: 
                         result["scraper_code"], encoding="utf-8")
                     logger.info(f"[GENERATION BACKGROUND] Final code persisted to "
                                 f"{scraper_dir / 'scraper.py'}")
+                    # Drop the agent's working scripts (anhoch_scraper.py,
+                    # *_improved.py, ...) — only scraper.py is canonical, and
+                    # stale drafts otherwise accumulate across regenerations.
+                    for stale in scraper_dir.glob("*.py"):
+                        if stale.name != "scraper.py":
+                            try:
+                                stale.unlink()
+                                logger.info(f"[GENERATION BACKGROUND] Removed "
+                                            f"stale script {stale.name}")
+                            except OSError as e:
+                                logger.warning(f"[GENERATION BACKGROUND] Could "
+                                               f"not remove {stale.name}: {e}")
                 except OSError as e:
                     logger.error(f"[GENERATION BACKGROUND] Could not write "
                                  f"scraper.py: {e} — runs will fail until fixed")

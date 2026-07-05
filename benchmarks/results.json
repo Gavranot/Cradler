@@ -81,7 +81,7 @@
    "image_hint": "frag",
    "sku": "frag"
   },
-  "seconds": 0.04
+  "seconds": 0.06
  },
  "barefootbuttons/listing": {
   "tokens": {
@@ -106,7 +106,7 @@
    "sample_names_covered": "ok",
    "exemplar_authorable": "ok"
   },
-  "seconds": 0.03
+  "seconds": 0.04
  },
  "beardbrand/detail": {
   "tokens": {
@@ -132,10 +132,10 @@
   },
   "checks": {
    "title": "frag",
-   "price": "l0",
+   "price": "n/a (not in pre-render HTML)",
    "image_hint": "frag"
   },
-  "seconds": 0.04
+  "seconds": 0.05
  },
  "beardbrand/listing": {
   "tokens": {
@@ -160,7 +160,7 @@
    "sample_names_covered": "ok",
    "exemplar_authorable": "ok"
   },
-  "seconds": 0.05
+  "seconds": 0.06
  },
  "bigcommerce-demo/detail": {
   "tokens": {
@@ -346,7 +346,7 @@
    "price": "frag",
    "image_hint": "frag"
   },
-  "seconds": 0.03
+  "seconds": 0.04
  },
  "gymshark/listing": {
   "tokens": {
@@ -371,7 +371,7 @@
    "sample_names_covered": "ok",
    "exemplar_authorable": "ok"
   },
-  "seconds": 0.11
+  "seconds": 0.12
  },
  "hyva-magento/detail": {
   "tokens": {
@@ -400,7 +400,7 @@
    "price": "frag",
    "image_hint": "frag"
   },
-  "seconds": 0.01
+  "seconds": 0.02
  },
  "hyva-magento/listing": {
   "tokens": {
@@ -453,7 +453,7 @@
    "price": "frag",
    "image_hint": "frag"
   },
-  "seconds": 0.04
+  "seconds": 0.06
  },
  "rothys/listing": {
   "tokens": {
@@ -558,7 +558,7 @@
    "price": "frag",
    "image_hint": "frag"
   },
-  "seconds": 0.0
+  "seconds": 0.01
  },
  "webscraper-io/listing": {
   "tokens": {

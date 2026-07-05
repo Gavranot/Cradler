@@ -6,8 +6,10 @@ It parses user intent, validates URLs, and generates structured requirements.
 
 Uses ReAct (Reasoning + Acting) combined with Plan and Execute methodology.
 """
+import asyncio
 import httpx
 import json
+import re
 from typing import List, Dict, Optional, Any
 from datetime import datetime
 from urllib.parse import urlparse
@@ -65,12 +67,20 @@ When the user confirms, use the `create_scraper` function with all the gathered 
 - For e-commerce sites, suggest common fields: title, price, images, reviews, availability
 - If URL validation shows robots.txt restrictions, inform the user but explain we use ethical scraping practices
 - Never create a scraper without explicit user confirmation
+- Actions happen ONLY through tool calls. Writing that you will create (or have
+  created) a scraper does nothing — the scraper exists only after you CALL the
+  `create_scraper` tool and it returns success
+- The moment the user confirms the summary ("yes", "go ahead", "create it",
+  etc.), call `create_scraper` in that same turn — do not reply with text
+  first and postpone the call
+- NEVER tell the user their scraper was created unless the `create_scraper`
+  tool has actually returned success in this conversation
 
 **Example Conversation Flow:**
 User: "I want to scrape product data from Amazon"
 You: "Great! I can help you create a scraper for Amazon. Could you share the specific Amazon page URL you'd like to scrape? For example, a category page or search results page."
 User: "https://amazon.com/s?k=laptops"
-You: *validate_url* "Perfect! What product information would you like to extract? Common fields include product title, price, ratings, and images."
+You: (call the validate_url tool, then reply) "Perfect! What product information would you like to extract? Common fields include product title, price, ratings, and images."
 User: "Title, price, and rating"
 You: "Excellent! How often would you like to run this scraper? Options include daily, weekly, or on-demand."
 User: "Daily"
@@ -82,7 +92,7 @@ You: "Great! Here's what I have:
 
 Should I create this scraper for you?"
 User: "Yes"
-You: *create_scraper* "Your scraper has been created successfully! ..."
+You: (call the create_scraper tool — only after it succeeds, reply) "Your scraper has been created successfully! ..."
 """
 
         # Tool definitions for function calling
@@ -140,6 +150,100 @@ You: *create_scraper* "Your scraper has been created successfully! ..."
             }
         ]
 
+    MAX_LLM_ATTEMPTS = 3
+
+    # Vendor-specific tool-call syntax that reasoning models (DeepSeek, MiniMax,
+    # Mistral, ...) intermittently emit as TEXT instead of the structured
+    # tool_calls array. Same failure class as KNOWN_ISSUES #2/#10.
+    _TEXT_TOOL_CALL_MARKERS = re.compile(
+        r"<｜tool▁call|<tool_call|<minimax:tool_call|<function_call|\[TOOL_CALLS\]"
+    )
+
+    def _is_glitched(self, message: Dict[str, Any]) -> Optional[str]:
+        """Return a reason string if the assistant message is transport garbage."""
+        if message.get("tool_calls"):
+            return None
+        content = (message.get("content") or "")
+        reasoning = (message.get("reasoning") or "")
+        if not content.strip() and not reasoning.strip():
+            return "empty message (no content/reasoning/tool_calls)"
+        if self._TEXT_TOOL_CALL_MARKERS.search(content + reasoning):
+            return "tool call emitted as text instead of structured tool_calls"
+        return None
+
+    async def _chat_completion(
+        self,
+        client: httpx.AsyncClient,
+        messages: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """
+        POST to OpenRouter and return the assistant message, retrying
+        transport-level garbage: empty messages, choices-less bodies,
+        retryable HTTP errors, and tool calls leaked into text (the model
+        DID decide to act — a resample usually yields the structured call).
+        """
+        last_message = None
+        last_error = "unknown"
+        for attempt in range(1, self.MAX_LLM_ATTEMPTS + 1):
+            try:
+                response = await client.post(
+                    f"{self.api_base}/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://cradler.ai",
+                        "X-Title": "Cradler"
+                    },
+                    json={
+                        "model": self.model,
+                        "messages": [
+                            {"role": "system", "content": self.system_prompt},
+                            *messages
+                        ],
+                        "tools": self.tools,
+                        "tool_choice": "auto",
+                        "temperature": 0.4,
+                        "max_tokens": 2000
+                    }
+                )
+                response.raise_for_status()
+                data = response.json()
+            except httpx.HTTPStatusError as e:
+                status_code = e.response.status_code
+                logger.error(f"[PRIMARY_AGENT] OpenRouter HTTP {status_code}: "
+                             f"{e.response.text[:500]}")
+                retryable = status_code in (408, 429, 500, 502, 503, 504)
+                if not retryable or attempt == self.MAX_LLM_ATTEMPTS:
+                    raise
+                last_error = f"HTTP {status_code}"
+            except (httpx.TimeoutException, httpx.TransportError) as e:
+                logger.error(f"[PRIMARY_AGENT] OpenRouter request failed: {e}")
+                if attempt == self.MAX_LLM_ATTEMPTS:
+                    raise
+                last_error = f"{type(e).__name__}: {e}"
+            else:
+                if data.get("choices"):
+                    message = data["choices"][0]["message"]
+                    glitch = self._is_glitched(message)
+                    if glitch is None:
+                        return message
+                    last_message = message
+                    last_error = glitch
+                else:
+                    # OpenRouter can return HTTP 200 with an error body
+                    last_error = f"no choices in response: {str(data)[:300]}"
+                logger.warning(f"[PRIMARY_AGENT] [LLM RETRY {attempt}/"
+                               f"{self.MAX_LLM_ATTEMPTS}] {last_error}")
+            await asyncio.sleep(2 * attempt)
+        # Chat UX: a degraded text reply beats a 500 — return what we got.
+        logger.error(f"[PRIMARY_AGENT] No clean reply after "
+                     f"{self.MAX_LLM_ATTEMPTS} attempts: {last_error}")
+        if last_message is not None:
+            return last_message
+        raise RuntimeError(
+            f"OpenRouter returned no usable reply after "
+            f"{self.MAX_LLM_ATTEMPTS} attempts: {last_error}")
+
     async def process_message(
         self,
         user_message: str,
@@ -194,31 +298,7 @@ You: *create_scraper* "Your scraper has been created successfully! ..."
             async with httpx.AsyncClient(timeout=60.0) as client:
                 for iteration in range(max_iterations):
                     logger.debug(f"[PRIMARY_AGENT] Iteration {iteration + 1}/{max_iterations}")
-                    response = await client.post(
-                        f"{self.api_base}/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {self.api_key}",
-                            "Content-Type": "application/json",
-                            "HTTP-Referer": "https://cradler.ai",
-                            "X-Title": "Cradler"
-                        },
-                        json={
-                            "model": self.model,
-                            "messages": [
-                                {"role": "system", "content": self.system_prompt},
-                                *messages
-                            ],
-                            "tools": self.tools,
-                            "tool_choice": "auto",
-                            "temperature": 0.7,
-                            "max_tokens": 2000
-                        }
-                    )
-
-                    response.raise_for_status()
-                    data = response.json()
-
-                    assistant_message = data["choices"][0]["message"]
+                    assistant_message = await self._chat_completion(client, messages)
 
                     # Check if there are tool calls
                     if assistant_message.get("tool_calls"):
@@ -278,8 +358,13 @@ You: *create_scraper* "Your scraper has been created successfully! ..."
                     else:
                         # No tool calls, we have the final response
                         logger.info(f"[PRIMARY_AGENT] Final response generated, scraper_created: {scraper_created is not None}")
+                        # content can be an explicit null with the text in
+                        # `reasoning` (same DeepSeek/OpenRouter glitch as
+                        # KNOWN_ISSUES #10) — coalesce, don't .get-default
                         return {
-                            "message": assistant_message.get("content", ""),
+                            "message": (assistant_message.get("content")
+                                        or assistant_message.get("reasoning")
+                                        or ""),
                             "scraper_created": scraper_created,
                             "tool_calls": tool_calls_made
                         }

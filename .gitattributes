@@ -1,0 +1,5 @@
+# Benchmark corpora are fetched byte-exact snapshots — never EOL-convert them
+# (Windows-side autocrlf silently rewrote corpus HTML and showed up as phantom
+# 48-line diffs; the regression suite depends on stable bytes).
+benchmarks/corpus/** -text
+backend/corpus_rendered/** -text

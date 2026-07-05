@@ -11,7 +11,14 @@ the solutions that were implemented. It is the single source of truth for the
 | 3 | Agent generated non-existent Botasaurus API calls | ✅ Solved (Context7) |
 | 4 | Context7 MCP transport quirks (healthcheck, headers, text responses) | ✅ Solved |
 | 5 | bcrypt version warning on startup | ⚠️ Cosmetic |
-| 6 | Long generation time with no progress feedback | ✅ Mitigated (polling) |
+| 6 | Long generation time with no progress feedback | ✅ Solved (background task + polling, see #12) |
+| 7 | websockets ≥14 breaks botasaurus-driver 4.0.7 | ✅ Solved (pin <14) |
+| 8 | Botasaurus Driver vs uvicorn event loop | ✅ Solved (dedicated driver thread) |
+| 9 | Context7 SSE-framed MCP responses | ✅ Solved (dual-format parser) |
+| 10 | DeepSeek `content: null` final messages | ✅ Solved (coalesce) |
+| 11 | Script name vs executor contract | ✅ Solved (persist scraper.py) |
+| 12 | `/generate` blocked despite 202 | ✅ Solved (BackgroundTasks) |
+| 13 | Primary Agent sometimes replies without calling `create_scraper` | ✅ Solved (glitch retry + prompt) |
 
 ---
 
@@ -155,3 +162,108 @@ known incompatibility between `passlib` and newer `bcrypt` builds.
 polls scraper status every 5 seconds during generation, auto-switching to the
 generated-code tab on completion. A WebSocket streaming upgrade remains a future
 enhancement.
+
+## 7. websockets ≥14 breaks botasaurus-driver 4.0.7 (2026-07-05)
+
+**Symptom:** every `Driver()` launch dies with
+`AttributeError: 'NoneType' object has no attribute 'closed'` — nothing in the
+message mentions the real culprit.
+
+**Root cause:** `botasaurus-driver==4.0.7` declares `websockets>=11` unbounded,
+but its CDP layer uses the legacy `.closed` API removed in websockets 14. An
+unpinned image build resolves 16.x; the failed property lookup falls through to
+`Connection.__getattr__` on a `None` target. Chrome itself launches fine.
+
+**Solution:** `requirements.txt` pins `websockets>=11,<14` (13.1 verified).
+Needs an image rebuild when changed. `scripts/fetch_corpus.py` checks the
+installed version at startup and reports "rebuild" instead of the cryptic error.
+
+## 8. Botasaurus Driver cannot run on uvicorn's event loop (2026-07-05)
+
+**Symptom:** `Cannot run the event loop while another loop is running` on
+browser session creation, plus stray `RuntimeWarning: coroutine 'start' was
+never awaited` — the browser never opens, while `test_scraper` (subprocess)
+works fine.
+
+**Root cause:** `Driver` drives Chrome via its own asyncio loop
+(`run_until_complete`) — illegal on the thread already running FastAPI's loop.
+The orphaned internal `start()` coroutine produces the RuntimeWarnings.
+
+**Solution:** `BrowserControlTool` confines ALL driver work (including property
+reads like `page_html`/`current_url`, which run JS internally) to a dedicated
+`ThreadPoolExecutor(max_workers=1)` via `_in_driver_thread(...)`. Any new
+driver call must use the same pattern.
+
+## 9. Context7 answers SSE frames, not plain JSON (2026-07-05)
+
+**Symptom:** `MCP initialization error: Expecting value: line 1 column 1` on
+every startup, although doc fetches sometimes still worked.
+
+**Root cause:** with the (required) `Accept: application/json, text/event-stream`
+header, Context7 2.3.0 replies SSE-framed (`event: message\ndata: {...}`) at
+least for `initialize`; the client parsed everything with `response.json()`.
+The session ID was captured from headers *before* the parse crash, which is why
+later tool calls could still succeed.
+
+**Solution:** `_parse_mcp_response()` in `context7_client.py` handles both SSE
+and plain-JSON bodies; used by `_initialize` and `_call_mcp_tool`.
+
+## 10. DeepSeek returns `content: null` on final messages (2026-07-05)
+
+**Symptom:** a fully successful generation (code written, tested) marked FAILED
+with `ValidationError: final_message — Input should be a valid string`.
+
+**Root cause:** DeepSeek via OpenRouter sometimes returns the assistant message
+with `content: null` and the actual text in `reasoning`. `.get("content", "")`
+does not guard against an explicit null.
+
+**Solution:** coalesce `content → reasoning → ""` in `agents/secondary/agent.py`
+(and transport-level retry on empty replies in `benchmarks/bench_llm.py`).
+
+## 11. Generated script name vs executor contract (2026-07-05)
+
+**Symptom:** `/run` failed with `Scraper script not found: .../scraper.py`
+although generation succeeded.
+
+**Root cause:** the agent names its working scripts freely
+(`anhoch_scraper.py`, `*_improved.py`), but `ScraperExecutor` runs exactly
+`scrapers/{user_id}/{scraper_id}/scraper.py`. Nothing bridged the two.
+
+**Solution:** `_generate_scraper_background` persists the final
+`scraper_code` to `scraper.py` on every successful generation.
+
+## 12. `/generate` blocked despite 202 (2026-07-05 — resolved)
+
+Issue 6's root cause is now fixed properly: generation runs in a real
+`BackgroundTasks` task (same pattern as `/run`, own DB session). The endpoint
+returns immediately; the existing 5s status polling drives the UI. The old
+behavior (agent loop awaited inline) made the frontend time out at 2 minutes
+while the backend kept working.
+
+## 13. Primary Agent replies without calling `create_scraper` (2026-07-05)
+
+**Symptom:** the user confirms scraper creation in chat; the agent answers
+(sometimes even claims success) but the backend never receives a
+`create_scraper` tool call.
+
+**Root causes (two, compounding):**
+1. Reasoning models (DeepSeek, MiniMax M3) intermittently emit the tool call
+   as *text* (`<｜tool▁calls▁begin｜>`, `<minimax:tool_call>`, ...) in
+   `content`/`reasoning` instead of the structured `tool_calls` array — the
+   same failure class as issues #2 and #10, but `PrimaryAgent` had none of the
+   Secondary Agent's defenses (no parser, no null-coalesce, no retry).
+2. The prompt's example flow narrated `*create_scraper*` as text and never
+   forbade claiming success without acting, so the model sometimes imitated
+   the narration instead of calling the tool.
+
+**Solution (`agents/primary/agent.py`):**
+- `_chat_completion(...)`: up to 3 attempts with backoff on retryable HTTP
+  status, timeouts, choices-less bodies, empty messages, and — key here —
+  replies where tool-call *marker syntax* appears in text without structured
+  `tool_calls` (the model decided to act; a resample usually yields the
+  structured call). Falls back to the degraded text reply rather than a 500.
+- Final `message` coalesces `content → reasoning → ""`.
+- Prompt hardened: "actions happen ONLY through tool calls", call
+  `create_scraper` in the same turn as the user's confirmation, never claim
+  success without a successful tool result; examples no longer narrate
+  `*create_scraper*` as prose.
